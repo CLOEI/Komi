@@ -1,0 +1,38 @@
+name: Build and Upload
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macOS-latest
+        lib_type: ['shared', 'static']
+        build_type: ['RelWithDebInfo', 'Debug']
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure CMake
+      shell: bash
+      run: |
+        BUILD_SHARED="OFF"
+        if [ "${{ matrix.lib_type }}" = "shared" ]; then
+          BUILD_SHARED="ON"
+        fi
+
+        cmake -S $GITHUB_WORKSPACE -B $GITHUB_WORKSPACE/build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DBUILD_SHARED_LIBS=$BUILD_SHARED
+
+    - name: Build
+      shell: bash
+      run: cmake --build $GITHUB_WORKSPACE/build --config ${{ matrix.build_type }}
+
+    - name: Upload the artifacts
+      uses: actions/upload-artifact@v2.2.2
+      with:
+        name: ${{ matrix.os }}-${{ matrix.lib_type }}-${{ matrix.build_type }}
+        path: ${{ github.workspace }}/build
