@@ -1,0 +1,34 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net50;netcoreapp3.1</TargetFrameworks>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>9</LangVersion>
+    <Nullable>enable</Nullable>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    
+    <!--CS1591 warns us to comment every publicly accessible method\field\property, in future we may remove it-->
+    <!--CA2101 warns us to specifiy string encoding for every P\Invoke definition which I find it annoying-->
+    <!--CA1063 warns us to implement IDisposable correctly-->
+    <NoWarn>CS1591,CA2101,CA1063</NoWarn>
+    
+    <!--Nuget package properties-->
+    <Authors>Moien007</Authors>
+    <RepositoryUrl>https://github.com/moien007/ENet.Managed</RepositoryUrl>
+    <Description>
+      A cross-platform managed wrapper for ENet UDP Networking library.
+    </Description>
+    <PackageProjectUrl>https://github.com/moien007/ENet.Managed</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/moien007/ENet.Managed/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageReleaseNotes>
+      - ENet binary is being consumed as a native dependency.
+    </PackageReleaseNotes>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="ENet.Managed.Runtime" Version="[1.3.17.1,1.4.0.0)" />
+  </ItemGroup>
+  
+</Project>
