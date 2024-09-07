@@ -115,6 +115,7 @@ enet_host_create (ENetAddressType type, const ENetAddress * address, size_t peer
     host -> compressor.destroy = NULL;
 
     host -> intercept = NULL;
+    host -> usingNewPacket = 0;
 
     enet_list_clear (& host -> dispatchQueue);
 

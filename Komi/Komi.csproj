@@ -7,7 +7,7 @@
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
-
+    
     <ItemGroup>
         <None Update="enet.dll">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -16,6 +16,15 @@
     
     <ItemGroup>
       <Content Include="ENet.Managed\ENet.Managed.csproj" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="MessagePack" Version="3.0.134-beta" />
+      <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
+    </ItemGroup>
+    
+    <ItemGroup>
+      <PackageReference Include="Serilog" Version="4.0.2-dev-02226" />
     </ItemGroup>
     
 </Project>

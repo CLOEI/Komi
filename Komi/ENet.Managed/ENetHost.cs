@@ -44,6 +44,8 @@ namespace ENet.Managed
         private readonly UIntPtr* m_pPeerCount;
         internal readonly NativeENetPeer* PeersStartPtr;
 
+        private UIntPtr* m_usingNewPacket;
+
         /// <summary>
         /// Gets current in-use (custom) compressor
         /// </summary>
@@ -253,6 +255,7 @@ namespace ENet.Managed
             m_pConnectedPeers = (UIntPtr*)IntPtr.Add(m_Pointer, getOffset(7));
             m_pDuplicatePeers = (UIntPtr*)IntPtr.Add(m_Pointer, getOffset(8));
             m_pPeerCount = (UIntPtr*)IntPtr.Add(m_Pointer, getOffset(9));
+            m_usingNewPacket = (UIntPtr*)IntPtr.Add(m_Pointer, getOffset(13));
 
             PeersStartPtr = (NativeENetPeer*)Marshal.ReadIntPtr(IntPtr.Add(m_Pointer, getOffset(10)));
             PeerList = new ENetHostPeerList(this);
@@ -451,6 +454,18 @@ namespace ENet.Managed
                 ThrowHelper.ThrowENetHostSetCompressWithRangeCoderFailed();
 
             m_Compressor = s_RangeCoderCompressor;
+        }
+        
+        public void UsingNewPacket()
+        {
+            CheckDispose();
+            *m_usingNewPacket = new UIntPtr(1);
+        }
+        
+        public bool IsUsingNewPacket()
+        {
+            CheckDispose();
+            return *m_usingNewPacket == new UIntPtr(1);
         }
 
         /// <summary>

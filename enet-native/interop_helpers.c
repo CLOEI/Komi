@@ -20,6 +20,7 @@ size_t enet_interophelper_sizeoroffset(enet_uint32 typeinfo_id)
     TYPE_SIZE(10, TYPE_OFFSET(ENetHost, peers));
     TYPE_SIZE(11, TYPE_OFFSET(ENetHost, mtu));
     TYPE_SIZE(12, TYPE_OFFSET(ENetHost, totalReceivedData));
+    TYPE_SIZE(13, TYPE_OFFSET(ENetHost, usingNewPacket));
 
     return -1;
 }

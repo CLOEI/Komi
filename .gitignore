@@ -2,3 +2,4 @@
 obj/
 enet/Native/build
 enet-native/build
+enet-native/.vs
