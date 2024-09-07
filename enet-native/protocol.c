@@ -1566,13 +1566,24 @@ enet_protocol_check_outgoing_commands (ENetHost * host, ENetPeer * peer)
 static int
 enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int checkForTimeouts)
 {
-    enet_uint8 headerData [sizeof (ENetProtocolHeader) + sizeof (enet_uint32)];
-    ENetProtocolHeader * header = (ENetProtocolHeader *) headerData;
+    size_t packetSize = host -> usingNewPacket ? sizeof (ENetNewProtocolHeader) : sizeof (ENetProtocolHeader);
+    enet_uint8 headerData [sizeof (ENetNewProtocolHeader) + sizeof (enet_uint32)];
+    ENetProtocolHeader * header = (ENetProtocolHeader*) headerData;
+    ENetNewProtocolHeader * newHeader = (ENetNewProtocolHeader*) headerData;
     ENetPeer * currentPeer;
     int sentLength;
     size_t shouldCompress = 0;
  
     host -> continueSending = 1;
+    if (host -> usingNewPacket)
+    {
+      enet_uint16 port = host -> peers -> address . port;
+      enet_uint16 rand1 = enet_host_random (host) % (port + 1);
+
+      newHeader -> integrity[0] = ENET_HOST_TO_NET_16 (rand1);
+      newHeader -> integrity[1] = ENET_HOST_TO_NET_16 (rand1 ^ port);
+      newHeader -> integrity[2] = ENET_HOST_TO_NET_16 (enet_host_random (host) & 0x61D2 | 0x920D);
+    }
 
     while (host -> continueSending)
     for (host -> continueSending = 0,
@@ -1587,7 +1598,7 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
         host -> headerFlags = 0;
         host -> commandCount = 0;
         host -> bufferCount = 1;
-        host -> packetSize = sizeof (ENetProtocolHeader);
+        host -> packetSize = packetSize;
 
         if (! enet_list_empty (& currentPeer -> acknowledgements))
           enet_protocol_send_acknowledgements (host, currentPeer);
@@ -1639,12 +1650,18 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
         host -> buffers -> data = headerData;
         if (host -> headerFlags & ENET_PROTOCOL_HEADER_FLAG_SENT_TIME)
         {
-            header -> sentTime = ENET_HOST_TO_NET_16 (host -> serviceTime & 0xFFFF);
+            if (host -> usingNewPacket)
+              newHeader -> sentTime = ENET_HOST_TO_NET_16 (host -> serviceTime & 0xFFFF);
+            else
+              header -> sentTime = ENET_HOST_TO_NET_16 (host -> serviceTime & 0xFFFF);
 
-            host -> buffers -> dataLength = sizeof (ENetProtocolHeader);
+            host -> buffers -> dataLength = packetSize;
         }
         else
-          host -> buffers -> dataLength = (size_t) & ((ENetProtocolHeader *) 0) -> sentTime;
+          if (host -> usingNewPacket)
+              host -> buffers -> dataLength = (size_t) & ((ENetNewProtocolHeader*)0) -> sentTime;
+            else
+              host -> buffers -> dataLength = (size_t) & ((ENetProtocolHeader*)0) -> sentTime;
 
         shouldCompress = 0;
         if (host -> compressor.context != NULL && host -> compressor.compress != NULL)
@@ -1667,7 +1684,10 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
 
         if (currentPeer -> outgoingPeerID < ENET_PROTOCOL_MAXIMUM_PEER_ID)
           host -> headerFlags |= currentPeer -> outgoingSessionID << ENET_PROTOCOL_HEADER_SESSION_SHIFT;
-        header -> peerID = ENET_HOST_TO_NET_16 (currentPeer -> outgoingPeerID | host -> headerFlags);
+        if (host -> usingNewPacket)
+            newHeader -> peerID = ENET_HOST_TO_NET_16(currentPeer -> outgoingPeerID | host -> headerFlags);
+        else
+            header -> peerID = ENET_HOST_TO_NET_16(currentPeer -> outgoingPeerID | host -> headerFlags);
         if (host -> checksum != NULL)
         {
             enet_uint32 * checksum = (enet_uint32 *) & headerData [host -> buffers -> dataLength];
