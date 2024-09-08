@@ -2,6 +2,7 @@
 using Komi.lib;
 using Komi.lib.bot;
 using Komi.lib.types;
+using Komi.lib.gui;
 
 namespace Komi
 {
@@ -16,10 +17,8 @@ namespace Komi
             ManagedENet.Startup(startupConfig);
             var manager = new Manager();
 
-            while (true)
-            {
-                Thread.Sleep(1000);
-            }
+            Menu renderer = new Menu();
+            renderer.Start().Wait();
         }
     }
 }
