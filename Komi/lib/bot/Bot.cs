@@ -309,6 +309,7 @@ public class Bot
             if (State.IsRedirecting)
             {
                 LogInfo("Redirecting to " + Server.Host + ":" + Server.Port);
+                ConnectToServer(Server.Host, Server.Port);
             }
             else
             {
@@ -333,9 +334,8 @@ public class Bot
                         }
 
                         var packetId = BinaryPrimitives.ReadInt32LittleEndian(packetData);
-                        EPacketType packetType = (EPacketType)packetId;
-                        LogInfo("Received packet type: " + packetType);
-                        
+                        var packetType = (EPacketType)packetId;
+                        LogInfo($"Received packet type: {packetType}");
                         PacketHandler.Handle(this, packetType, packetData[4..]);
                         
                         enetEvent.Packet.Destroy();
@@ -344,6 +344,7 @@ public class Bot
                         LogInfo("Disconnected from the server");
                         break;
                 }
+                break;
             }
         }
     }
@@ -416,12 +417,17 @@ public class Bot
         Peer.Send(0, packetData, ENetPacketFlags.Reliable);
     }
 
-    private void LogInfo(string message)
+    public void Disconnect()
+    {
+        Peer.Disconnect(0);
+    }
+
+    public void LogInfo(string message)
     {
         Log.Information("[{username}] {message}", Info.Username, message);
     }
 
-    private void LogError(string message)
+    public void LogError(string message)
     {
         Log.Error("[{username}] {message}", Info.Username, message);
     }
