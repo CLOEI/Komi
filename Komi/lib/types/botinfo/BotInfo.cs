@@ -13,6 +13,12 @@
         public string Status { get; set; }
         public uint Timeout { get; set; }
         public ProxyInfo? ProxyInfo { get; set; }
+        
+        public Info()
+        {
+            OauthLinks = new List<string>();
+            ServerData = new Dictionary<string, string>();
+        }
     }
     
     public class ProxyInfo

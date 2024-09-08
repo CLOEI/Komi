@@ -47,7 +47,7 @@ public class LoginInfo
         Fz = "47142936";
         F = "1";
         PlayerAge = "20";
-        GameVersion = "v4.64";
+        GameVersion = "4.64";
         LMode = "1";
         CBits = "1040";
         Rid = utils.Random.Hex(32, true);
@@ -70,31 +70,31 @@ public class LoginInfo
     public override string ToString()
     {
         var sb = new StringBuilder();
-        sb.AppendLine($"fhash|{FHash}");
-        sb.AppendLine($"mac|{Mac}");
-        sb.AppendLine($"requestedName|{RequestedName}");
-        sb.AppendLine($"hash2|{Hash2}");
-        sb.AppendLine($"fz|{Fz}");
-        sb.AppendLine($"f|{F}");
-        sb.AppendLine($"player_age|{PlayerAge}");
-        sb.AppendLine($"game_version|{GameVersion}");
-        sb.AppendLine($"lmode|{LMode}");
-        sb.AppendLine($"cbits|{CBits}");
-        sb.AppendLine($"rid|{Rid}");
-        sb.AppendLine($"gdpr|{Gdpr}");
-        sb.AppendLine($"hash|{Hash}");
-        sb.AppendLine($"category|{Category}");
-        sb.AppendLine($"token|{Token}");
-        sb.AppendLine($"totalPlaytime|{TotalPlaytime}");
-        sb.AppendLine($"doorID|{DoorId}");
-        sb.AppendLine($"klv|{Klv}");
-        sb.AppendLine($"meta|{Meta}");
-        sb.AppendLine($"platformID|{PlatformId}");
-        sb.AppendLine($"deviceVersion|{DeviceVersion}");
-        sb.AppendLine($"zf|{Zf}");
-        sb.AppendLine($"country|{Country}");
-        sb.AppendLine($"user|{User}");
-        sb.AppendLine($"wk|{Wk}");
+        sb.Append($"fhash|{FHash}\n");
+        sb.Append($"mac|{Mac}\n");
+        sb.Append($"requestedName|{RequestedName}\n");
+        sb.Append($"hash2|{Hash2}\n");
+        sb.Append($"fz|{Fz}\n");
+        sb.Append($"f|{F}\n");
+        sb.Append($"player_age|{PlayerAge}\n");
+        sb.Append($"game_version|{GameVersion}\n");
+        sb.Append($"lmode|{LMode}\n");
+        sb.Append($"cbits|{CBits}\n");
+        sb.Append($"rid|{Rid}\n");
+        sb.Append($"gdpr|{Gdpr}\n");
+        sb.Append($"hash|{Hash}\n");
+        sb.Append($"category|{Category}\n");
+        sb.Append($"token|{Token}\n");
+        sb.Append($"totalPlaytime|{TotalPlaytime}\n");
+        sb.Append($"doorID|{DoorId}\n");
+        sb.Append($"klv|{Klv}\n");
+        sb.Append($"meta|{Meta}\n");
+        sb.Append($"platformID|{PlatformId}\n");
+        sb.Append($"deviceVersion|{DeviceVersion}\n");
+        sb.Append($"zf|{Zf}\n");
+        sb.Append($"country|{Country}\n");
+        sb.Append($"user|{User}\n");
+        sb.Append($"wk|{Wk}\n");
         return sb.ToString();
     }
 }

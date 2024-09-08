@@ -1,4 +1,6 @@
 ﻿using ENet.Managed;
+using Komi.lib.bot;
+using Komi.lib.types;
 
 namespace Komi
 {

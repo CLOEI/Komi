@@ -12,10 +12,10 @@ namespace Komi.lib.bot;
 
 public class Bot
 {
-    private Info Info { get; set; }
-    private State State { get; set; }
-    private Server Server { get; set; }
-    private Vector2 Position { get; set; }
+    public Info Info { get; set; }
+    public State State { get; set; }
+    public Server Server { get; set; }
+    public Vector2 Position { get; set; }
     private ENetHost Host { get; set; }
     private ENetPeer Peer { get; set; }
     private Logger Log { get; set; }
@@ -33,11 +33,14 @@ public class Bot
             Token = config.Token,
             LoginInfo = new LoginInfo(),
         };
+        State = new State();
+        Server = new Server();
+        Position = new Vector2();
     }
 
-    public void Logon(string data)
+    public void Logon(string? data)
     {
-        if (data.Length == 0)
+        if (string.IsNullOrEmpty(data))
         {
             Spoof();
         }
@@ -156,25 +159,26 @@ public class Bot
         {
             return;
         }
-        
+
         LogInfo("Getting token for bot");
         var token = "";
 
         switch (Info.LoginMethod)
         {
             case ELoginMethod.Legacy:
+                token = Login.GetLegacyToken(Info.OauthLinks[2], Info.Username, Info.Password);
                 break;
             default:
                 LogError("Invalid login method");
                 break;
         }
-        
+
         if (token.Length == 0)
         {
             LogError("Failed to get token");
             return;
         }
-        
+        LogInfo("Token received: " + token);
         Info.Token = token;
     }
 
@@ -186,48 +190,46 @@ public class Bot
         {
             try
             {
-                using (var client = new HttpClient())
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("User-Agent", "UbiServices_SDK_2022.Release.9_PC64_ansi_static");
+                var content = new FormUrlEncodedContent(new[]
                 {
-                    client.DefaultRequestHeaders.Add("User-Agent", "UbiServices_SDK_2022.Release.9_PC64_ansi_static");
-                    var content = new FormUrlEncodedContent(new[]
-                    {
-                        new KeyValuePair<string, string>("refreshToken", Info.Token),
-                        new KeyValuePair<string, string>("clientData", Info.LoginInfo.ToString())
-                    });
+                    new KeyValuePair<string, string>("refreshToken", Info.Token),
+                    new KeyValuePair<string, string>("clientData", Info.LoginInfo.ToString())
+                });
 
-                    var response = client
-                        .PostAsync(
-                            "https://login.growtopiagame.com/player/growid/checktoken?valKey=40db4045f2d8c572efe8c4a060605726",
-                            content).Result;
+                var response = client
+                    .PostAsync(
+                        "https://login.growtopiagame.com/player/growid/checktoken?valKey=40db4045f2d8c572efe8c4a060605726",
+                        content).Result;
 
-                    if (response.StatusCode != HttpStatusCode.OK)
-                    {
-                        LogError("Failed to refresh token, retrying...");
-                        Thread.Sleep(1000);
-                        continue;
-                    }
-
-                    var responseText = response.Content.ReadAsStringAsync().Result;
-                    var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseText);
-
-                    if (jsonResponse.GetProperty("status").GetString() == "success")
-                    {
-                        var newToken = jsonResponse.GetProperty("token").GetString();
-                        LogInfo($"Token is still valid | new token: {newToken}");
-
-                        if (newToken == null)
-                        {
-                            LogError("Token is invalid");
-                            return false;
-                        }
-
-                        Info.Token = newToken;
-                        return true;
-                    }
-
-                    LogError("Token is invalid");
-                    return false;
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    LogError("Failed to refresh token, retrying...");
+                    Thread.Sleep(1000);
+                    continue;
                 }
+
+                var responseText = response.Content.ReadAsStringAsync().Result;
+                var jsonResponse = JsonSerializer.Deserialize<JsonElement>(responseText);
+
+                if (jsonResponse.GetProperty("status").GetString() == "success")
+                {
+                    var newToken = jsonResponse.GetProperty("token").GetString();
+                    LogInfo($"Token is still valid | new token: {newToken}");
+
+                    if (newToken == null)
+                    {
+                        LogError("Token is invalid");
+                        return false;
+                    }
+
+                    Info.Token = newToken;
+                    return true;
+                }
+
+                LogError("Token is invalid");
+                return false;
             }
             catch (Exception ex)
             {
@@ -259,36 +261,34 @@ public class Bot
         {
             try
             {
-                using (var client = new HttpClient())
+                using var client = new HttpClient();
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0");
+                var content = new StringContent(WebUtility.UrlEncode(Info.LoginInfo.ToString()),
+                    System.Text.Encoding.UTF8, "application/x-www-form-urlencoded");
+                var response = client.PostAsync("https://login.growtopiagame.com/player/login/dashboard", content)
+                    .Result;
+
+                if (response.StatusCode != HttpStatusCode.OK)
                 {
-                    client.DefaultRequestHeaders.Add("User-Agent", "USER_AGENT");
-                    var content = new StringContent(WebUtility.UrlEncode(Info.LoginInfo.ToString()),
-                        System.Text.Encoding.UTF8, "application/x-www-form-urlencoded");
-                    var response = client.PostAsync("https://login.growtopiagame.com/player/login/dashboard", content)
-                        .Result;
-
-                    if (response.StatusCode != HttpStatusCode.OK)
-                    {
-                        Log.Warning("Failed to get OAuth links");
-                        Thread.Sleep(1000);
-                        continue;
-                    }
-
-                    var body = response.Content.ReadAsStringAsync().Result;
-                    var pattern =
-                        new Regex(
-                            @"https://login\.growtopiagame\.com/(apple|google|player/growid)/(login|redirect)\?token=[^""]+");
-                    var matches = pattern.Matches(body);
-
-                    var links = new List<string>();
-                    foreach (Match match in matches)
-                    {
-                        links.Add(match.Value);
-                    }
-
-                    LogInfo("Successfully got OAuth links");
-                    return links;
+                    Log.Warning("Failed to get OAuth links");
+                    Thread.Sleep(1000);
+                    continue;
                 }
+
+                var body = response.Content.ReadAsStringAsync().Result;
+                var pattern =
+                    new Regex(
+                        @"https://login\.growtopiagame\.com/(apple|google|player/growid)/(login|redirect)\?token=[^""]+");
+                var matches = pattern.Matches(body);
+
+                var links = new List<string>();
+                foreach (Match match in matches)
+                {
+                    links.Add(match.Value);
+                }
+
+                LogInfo("Successfully got OAuth links");
+                return links;
             }
             catch (Exception ex)
             {
@@ -300,22 +300,22 @@ public class Bot
 
     private void PollEvent()
     {
+        if (!State.IsRunning)
+        {
+            return;
+        }
+
+        if (State.IsRedirecting)
+        {
+            LogInfo("Redirecting to " + Server.Host + ":" + Server.Port);
+        }
+        else
+        {
+            Reconnect();
+        }
+
         while (true)
         {
-            if (!State.IsRunning)
-            {
-                break;
-            }
-
-            if (State.IsRedirecting)
-            {
-                LogInfo("Redirecting to " + Server.Host + ":" + Server.Port);
-            }
-            else
-            {
-                Reconnect();
-            }
-
             var enetEvent = Host.Service(TimeSpan.FromMilliseconds(100));
             switch (enetEvent.Type)
             {
@@ -339,8 +339,8 @@ public class Bot
         LogInfo("Spoofing bot data");
         Info.LoginInfo.Klv =
             Proton.GenerateKlv(Info.LoginInfo.Protocol, Info.LoginInfo.GameVersion, Info.LoginInfo.Rid);
-        Info.LoginInfo.Hash = Proton.HashString(string.Format("{0}RT", Info.LoginInfo.Mac)).ToString();
-        Info.LoginInfo.Hash = Proton.HashString(string.Format("{0}RT", utils.Random.Hex(16, true))).ToString();
+        Info.LoginInfo.Hash = Proton.HashString($"{Info.LoginInfo.Mac}RT").ToString();
+        Info.LoginInfo.Hash2 = Proton.HashString($"{utils.Random.Hex(16, true)}RT").ToString();
     }
 
     private void CreateHost()
@@ -364,7 +364,7 @@ public class Bot
         {
             try
             {
-                var client = new HttpClient();
+                using var client = new HttpClient();
                 var request = new HttpRequestMessage(HttpMethod.Post,
                     "https://www.growtopia1.com/growtopia/server_data.php");
                 request.Headers.Add("User-Agent", "UbiServices_SDK_2022.Release.9_PC64_ansi_static");
