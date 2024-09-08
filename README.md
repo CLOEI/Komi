@@ -19,5 +19,5 @@ cmake --build ./build --config Release
 
 ## Todo
 - [ ] Implement bot library
-- [ ] Implement GUI
+- [x] Implement GUI
 - [ ] To be added
