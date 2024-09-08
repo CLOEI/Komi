@@ -12,4 +12,28 @@ public class TextParse
            
         return serverData;
     }
+    
+    public static List<string> ParseAndStoreAsList(string input)
+    {
+        return input.Split('|').ToList();
+    }
+
+    public static Dictionary<string, string> ParseAndStoreAsDic(string input)
+    {
+        var map = new Dictionary<string, string>();
+        var lines = input.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var line in lines)
+        {
+            var parts = line.Split('|');
+            if (parts.Length >= 2)
+            {
+                var key = parts[0];
+                var value = string.Join("|", parts.Skip(1));
+                map[key] = value;
+            }
+        }
+
+        return map;
+    }
 }

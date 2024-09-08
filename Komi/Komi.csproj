@@ -20,6 +20,10 @@
     
     <ItemGroup>
       <PackageReference Include="MessagePack" Version="3.0.134-beta" />
+      <PackageReference Include="MessagePackAnalyzer" Version="3.0.134-beta">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
       <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     </ItemGroup>
     

@@ -1,6 +1,6 @@
 ﻿namespace Komi.lib.types.botinfo
 {
-    public struct Info
+    public class Info
     {
         public string Username { get; set; }
         public string Password { get; set; }
@@ -15,7 +15,7 @@
         public ProxyInfo? ProxyInfo { get; set; }
     }
     
-    public struct ProxyInfo
+    public class ProxyInfo
     {
         public string Host { get; set; }
         public int Port { get; set; }
@@ -23,7 +23,7 @@
         public string Password { get; set; }
     }
 
-    public struct State
+    public class State
     {
         public uint NetId { get; set; }
         public int Gems { get; set; }
@@ -35,13 +35,13 @@
         public bool IsTutorial { get; set; }
     }
 
-    public struct Server
+    public class Server
     {
         public string Host { get; set; }
         public int Port { get; set; }
     }
 
-    public struct FTUE
+    public class FTUE
     {
         public int CurrentProgress { get; set; }
         public int TotalProgress { get; set; }
