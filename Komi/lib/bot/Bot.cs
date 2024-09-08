@@ -388,7 +388,7 @@ public class Bot
 
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
-                    LogError("Failed to connect to the server: " + response);
+                    LogError("Failed to connect to the server, retrying...");
                     Thread.Sleep(1000);
                     continue;
                 }
@@ -399,7 +399,7 @@ public class Bot
             }
             catch (Exception e)
             {
-                LogError("Failed to connect to the server: " + e);
+                LogError("Failed to connect to the server, retrying...");
                 Thread.Sleep(1000);
             }
         }
