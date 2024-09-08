@@ -18,6 +18,7 @@ public class Bot
     public State State { get; set; }
     public Server Server { get; set; }
     public Vector2 Position { get; set; }
+    public FTUE Ftue { get; set; }
     private ENetHost Host { get; set; }
     private ENetPeer Peer { get; set; }
     private Logger Log { get; set; }
@@ -38,6 +39,7 @@ public class Bot
         State = new State();
         Server = new Server();
         Position = new Vector2();
+        Ftue = new FTUE();
     }
 
     public void Logon(string? data)

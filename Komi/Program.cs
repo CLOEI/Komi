@@ -14,7 +14,7 @@ namespace Komi
                 ModulePath = Directory.GetCurrentDirectory() + "/enet.dll"
             };
             ManagedENet.Startup(startupConfig);
-            var manager = new Manager();`
+            var manager = new Manager();
 
             while (true)
             {

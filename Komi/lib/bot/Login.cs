@@ -43,7 +43,7 @@ namespace Komi.lib.bot
             return json["token"].ToString();
         }
 
-        public static string? ExtractTokenFromHtml(string body)
+        private static string? ExtractTokenFromHtml(string body)
         {
             var regex = new Regex(@"name=""_token""\s+type=""hidden""\s+value=""([^""]*)""");
             var match = regex.Match(body);

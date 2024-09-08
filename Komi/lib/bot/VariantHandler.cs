@@ -44,6 +44,55 @@ public class VariantHandler
                 bot.LogInfo($"Received console message: {message}");
                 break;
             }
+            case "OnDialogRequest":
+            {
+                var dialog = variant.Get(1).AsString();
+                if (dialog.Contains("Gazette"))
+                {
+                    bot.SendPacket(EPacketType.NetMessageGenericText, "action|dialog_return\ndialog_name|gazette\nbuttonClicked|banner\n");
+                }
+
+                break;
+            }
+            case "OnSetBux":
+            {
+                var bux = variant.Get(1).AsInt32();
+                bot.State.Gems = bux;
+                break;
+            }
+            case "OnSetPos":
+            {
+                var (x, y) = variant.Get(1).AsVec2();
+                bot.Position.X = x;
+                bot.Position.Y = y;
+                break;
+            }
+            case "SetHasGrowID":
+            {
+                var growid = variant.Get(2).AsString();
+                bot.Info.LoginInfo.TankIdName = growid;
+                break;
+            }
+            case "OnFtueButtonDataSet":
+            {
+                var unknown = variant.Get(1).AsInt32();
+                var currentProgress = variant.Get(2).AsInt32();
+                var totalProgress = variant.Get(3).AsInt32();
+                var info = variant.Get(4).AsString();
+                
+                bot.LogInfo($"Received FTUE button data set: {unknown} {currentProgress} {totalProgress} {info}");
+                
+                bot.Ftue.CurrentProgress = currentProgress;
+                bot.Ftue.TotalProgress = totalProgress;
+                bot.Ftue.Info = info;
+                break;
+            }
+            case "OnTalkBubble":
+            {
+                var message = variant.Get(1).AsString();
+                bot.LogInfo($"Received talk bubble: {message}");
+                break;
+            }
         }
     }
 }
