@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System.Buffers.Binary;
+using System.Net;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ENet.Managed;
@@ -178,6 +180,7 @@ public class Bot
             LogError("Failed to get token");
             return;
         }
+
         LogInfo("Token received: " + token);
         Info.Token = token;
     }
@@ -262,7 +265,8 @@ public class Bot
             try
             {
                 using var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0");
+                client.DefaultRequestHeaders.Add("User-Agent",
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0");
                 var content = new StringContent(WebUtility.UrlEncode(Info.LoginInfo.ToString()),
                     System.Text.Encoding.UTF8, "application/x-www-form-urlencoded");
                 var response = client.PostAsync("https://login.growtopiagame.com/player/login/dashboard", content)
@@ -300,36 +304,46 @@ public class Bot
 
     private void PollEvent()
     {
-        if (!State.IsRunning)
+        while (State.IsRunning)
         {
-            return;
-        }
-
-        if (State.IsRedirecting)
-        {
-            LogInfo("Redirecting to " + Server.Host + ":" + Server.Port);
-        }
-        else
-        {
-            Reconnect();
-        }
-
-        while (true)
-        {
-            var enetEvent = Host.Service(TimeSpan.FromMilliseconds(100));
-            switch (enetEvent.Type)
+            if (State.IsRedirecting)
             {
-                case ENetEventType.None:
-                    continue;
-                case ENetEventType.Connect:
-                    LogInfo("Connected to the server");
-                    continue;
-                case ENetEventType.Receive:
-                    LogInfo("Received a packet from the server");
-                    continue;
-                case ENetEventType.Disconnect:
-                    LogInfo("Disconnected from the server");
-                    break;
+                LogInfo("Redirecting to " + Server.Host + ":" + Server.Port);
+            }
+            else
+            {
+                Reconnect();
+            }
+
+            while (true)
+            {
+                var enetEvent = Host.Service(TimeSpan.FromMilliseconds(100));
+                switch (enetEvent.Type)
+                {
+                    case ENetEventType.None:
+                        continue;
+                    case ENetEventType.Connect:
+                        LogInfo("Connected to the server");
+                        continue;
+                    case ENetEventType.Receive:
+                        var packetData = enetEvent.Packet.Data;
+                        if (packetData.Length < 4)
+                        {
+                            continue;
+                        }
+
+                        var packetId = BinaryPrimitives.ReadInt32LittleEndian(packetData);
+                        EPacketType packetType = (EPacketType)packetId;
+                        LogInfo("Received packet type: " + packetType);
+                        
+                        PacketHandler.Handle(this, packetType, packetData[4..]);
+                        
+                        enetEvent.Packet.Destroy();
+                        continue;
+                    case ENetEventType.Disconnect:
+                        LogInfo("Disconnected from the server");
+                        break;
+                }
             }
         }
     }
@@ -388,6 +402,18 @@ public class Bot
                 Thread.Sleep(1000);
             }
         }
+    }
+
+    public void SendPacket(EPacketType packetType, string message)
+    {
+        var packetTypeByte = BitConverter.GetBytes((int)packetType);
+        var data = Encoding.ASCII.GetBytes(message);
+        
+        var packetData = new byte[packetTypeByte.Length + data.Length];
+        packetTypeByte.CopyTo(packetData, 0);
+        data.CopyTo(packetData, packetTypeByte.Length);
+        
+        Peer.Send(0, packetData, ENetPacketFlags.Reliable);
     }
 
     private void LogInfo(string message)
