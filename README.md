@@ -33,6 +33,6 @@ cmake --build ./build --config Release
 - [x] Legacy login
 - [ ] Auto collect
 - [ ] Google login
-- [ ] Steam login
+- [x] Steam login
 - [ ] Apple login
 - [ ] To be added

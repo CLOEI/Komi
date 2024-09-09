@@ -36,4 +36,9 @@ public class TextParse
 
         return map;
     }
+    
+    public static string FormatByteAsSteamToken(byte[] data)
+    {
+        return string.Join("+", data.Select(b => b.ToString("x2")));
+    }
 }

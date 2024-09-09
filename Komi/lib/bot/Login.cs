@@ -85,7 +85,8 @@ public class Login
         return gameToken;
     }
 
-    public static string GetUbisoftToken(string botInfo, string email, string password, string steamUser, string steamPassword)
+    public static string GetUbisoftToken(string botInfo, string email, string password, string steamUser,
+        string steamPassword)
     {
         var handler = new HttpClientHandler
         {
@@ -103,9 +104,15 @@ public class Login
             throw new Exception($"Failed to get ubisoft session: {ex.Message}");
         }
 
-        string steamToken = ""; // TODO: Implement steam token
+        var token = GetSessionTokenFromSteam(steamUser, steamPassword);
+        string steamToken = "";
 
-        var formatted = Convert.ToBase64String(Encoding.UTF8.GetBytes($"UbiTicket|{session}{botInfo}\n"));
+        if (token != null)
+        {
+            steamToken = $"{utils.TextParse.FormatByteAsSteamToken(token)}.240";
+        }
+
+        var formatted = WebUtility.UrlEncode($"UbiTicket|{session}{botInfo}\n");
         var request = new HttpRequestMessage(HttpMethod.Post,
             "https://login.growtopiagame.com/player/login/dashboard?valKey=40db4045f2d8c572efe8c4a060605726");
         request.Headers.Add("User-Agent", UserAgent);
@@ -116,13 +123,50 @@ public class Login
         response.EnsureSuccessStatusCode();
 
         var jsonString = response.Content.ReadAsStringAsync().Result;
+        Console.WriteLine(jsonString);
         var json = JsonDocument.Parse(jsonString);
         return json.RootElement.GetProperty("token").GetString();
     }
 
-    private static string GetSessionTokenFromSteam(string username, string password)
+    private static byte[]? GetSessionTokenFromSteam(string username, string password)
     {
-        return "";
+        var steamClient = new SteamClient();
+        var manager = new CallbackManager(steamClient);
+        var steamUser = steamClient.GetHandler<SteamUser>();
+        var steamAuthTicket = steamClient.GetHandler<SteamAuthTicket>();
+        var isRunning = true;
+        byte[]? token = null;
+
+        manager.Subscribe<SteamClient.ConnectedCallback>(callback =>
+        {
+            steamUser.LogOn(new SteamUser.LogOnDetails
+            {
+                Username = username,
+                Password = password
+            });
+        });
+
+        manager.Subscribe<SteamUser.LoggedOnCallback>(callback =>
+        {
+            if (callback.Result != EResult.OK)
+            {
+                isRunning = false;
+                Console.WriteLine("Failed to log in to steam");
+            }
+
+            token = steamAuthTicket.GetAuthSessionTicket(866020).Result.Ticket.ToArray();
+            isRunning = false;
+        });
+
+        steamClient.Connect();
+
+        while (isRunning)
+        {
+            manager.RunWaitCallbacks(TimeSpan.FromSeconds(1));
+        }
+
+        steamUser.LogOff();
+        return token;
     }
 
     private static string? ExtractTokenFromHtml(string body)

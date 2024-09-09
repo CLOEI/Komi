@@ -197,6 +197,7 @@ public class Bot
                 token = Login.GetLegacyToken(Info.OauthLinks[2], Info.Payload[0], Info.Payload[1]);
                 break;
             case ELoginMethod.Steam:
+                Info.LoginInfo.PlatformId = "15,1,0";
                 token = Login.GetUbisoftToken(Info.LoginInfo.ToString(), Info.Payload[0], Info.Payload[1], Info.Payload[2], Info.Payload[3]);
                 break;
             default:
