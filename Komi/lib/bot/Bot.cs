@@ -290,7 +290,7 @@ public class Bot
         ConnectToServer(Info.ServerData["server"], int.Parse(Info.ServerData["port"]));
     }
 
-    public void Poll()
+    private void Poll()
     {
         Thread thread = new Thread(() =>
         {
@@ -300,7 +300,7 @@ public class Bot
                 {
                     Info.Ping = Peer.RoundTripTime;
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                     Info.Ping = 0;
                 }
@@ -313,7 +313,7 @@ public class Bot
         thread.Start();
     }
 
-    public List<string> GetOauthLinks()
+    private List<string> GetOauthLinks()
     {
         LogInfo("Getting OAuth links");
 
@@ -455,7 +455,7 @@ public class Bot
                 Info.ServerData = TextParse.ParseServerData(body);
                 break;
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 LogError("Failed to connect to the server, retrying...");
                 Sleep();

@@ -7,23 +7,22 @@ namespace Komi.lib.gui
 {
     public class Menu(Manager manager) : Overlay
     {
-        private Vector2 windowSize = new Vector2(800, 500);
-        private Vector2 windowPosition = new Vector2(0, 0);
-        private static bool p_open = true;
-        private static bool m_init = true;
+        private readonly Vector2 _windowSize = new(800, 450);
+        private Vector2 _windowPosition = new(0, 0);
+        private static bool _pOpen = true;
+        private static bool _mInit = true;
 
-        private ImGuiWindowFlags windowFlags =
+        private readonly ImGuiWindowFlags _windowFlags =
             ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoSavedSettings;
 
-        protected unsafe override void Render()
+        protected override unsafe void Render()
         {
-            if (m_init)
+            if (_mInit)
             {
                 SetTheme();
-                ImGuiIOPtr io = ImGui.GetIO();
+                var io = ImGui.GetIO();
                 ReplaceFont(config =>
                 {
-                    var io = ImGui.GetIO();
                     if (File.Exists("Roboto-Regular.ttf"))
                     {
                         io.Fonts.AddFontFromFileTTF("Roboto-Regular.ttf", 18f, config,
@@ -32,20 +31,20 @@ namespace Komi.lib.gui
                 });
                 Vector2 displaySize = io.DisplaySize;
 
-                windowPosition = new Vector2(
-                    (displaySize.X - windowSize.X) * 0.5f,
-                    (displaySize.Y - windowSize.Y) * 0.5f
+                _windowPosition = new Vector2(
+                    (displaySize.X - _windowSize.X) * 0.5f,
+                    (displaySize.Y - _windowSize.Y) * 0.5f
                 );
 
-                m_init = false;
+                _mInit = false;
             }
 
-            if (!p_open)
+            if (!_pOpen)
                 Close();
 
-            ImGui.SetNextWindowSize(windowSize, ImGuiCond.FirstUseEver);
-            ImGui.SetNextWindowPos(windowPosition, ImGuiCond.Once);
-            ImGui.Begin("Komi - github.com/CLOEI/Komi", ref p_open, windowFlags);
+            ImGui.SetNextWindowSize(_windowSize, ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowPos(_windowPosition, ImGuiCond.Once);
+            ImGui.Begin("Komi - github.com/CLOEI/Komi", ref _pOpen, _windowFlags);
 
             if (ImGui.BeginTabBar("TabBar"))
             {
