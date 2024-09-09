@@ -15,6 +15,13 @@ namespace Komi
             };
             ManagedENet.Startup(startupConfig);
             var manager = new Manager();
+            var config = new BotConfig()
+            {
+                Username = "mxgr",
+                Password = "mxgr@finally1",
+                LoginMethod = ELoginMethod.Legacy
+            };
+            manager.AddBot(config);
 
             Menu renderer = new Menu();
             renderer.Start().Wait();

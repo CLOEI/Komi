@@ -6,6 +6,8 @@ Working in progress
 </p>
 </div>
 
+[Join our Discord](https://discord.gg/AhUnkUyCDe)
+
 ## Development
 
 - There is `enet-native` dependency that needs to be build for your os ( Windows should already been provided )
@@ -29,6 +31,7 @@ cmake --build ./build --config Release
 - [x] Session token
 - [ ] Save account & session to JSON
 - [x] Legacy login
+- [ ] Auto collect
 - [ ] Google login
 - [ ] Steam login
 - [ ] Apple login
