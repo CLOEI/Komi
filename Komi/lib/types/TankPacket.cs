@@ -1,11 +1,11 @@
-﻿namespace Komi.lib.types;
+﻿using System.Runtime.InteropServices;
 
+namespace Komi.lib.types;
+
+[StructLayout(LayoutKind.Sequential, Pack = 1)]
 public struct TankPacket
 {
     public ETankPacketType Type { get; set; }
-    public byte Unk1 { get; set; }
-    public byte Unk2 { get; set; }
-    public byte Unk3 { get; set; }
     public uint NetId { get; set; }
     public uint Unk4 { get; set; }
     public uint Flags { get; set; }

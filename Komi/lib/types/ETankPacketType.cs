@@ -1,6 +1,6 @@
 ﻿namespace Komi.lib.types;
 
-public enum ETankPacketType: byte
+public enum ETankPacketType
 {
     NetGamePacketState,
     NetGamePacketCallFunction,

@@ -72,6 +72,21 @@ public class PacketHandler
                     case ETankPacketType.NetGamePacketCallFunction:
                         VariantHandler.Handle(bot, data[56..]);
                         break;
+                    case ETankPacketType.NetGamePacketPingRequest:
+                    {
+                        var packet = new TankPacket()
+                        {
+                            Type = ETankPacketType.NetGamePacketPingReply,
+                            VectorX = 64.0f,
+                            VectorY = 64.0f,
+                            VectorX2 = (int)1000.0,
+                            VectorY2 = (int)250.0,
+                            Value = tankPacket.Value,
+                            Unk4 = utils.Proton.HashString(tankPacket.Value.ToString())
+                        };
+                        bot.SendPacketRaw(packet);
+                        break;
+                    }
                 }
                 
                 break;

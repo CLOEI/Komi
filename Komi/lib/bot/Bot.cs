@@ -1,5 +1,6 @@
 ﻿using System.Buffers.Binary;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -7,8 +8,12 @@ using ENet.Managed;
 using Komi.lib.types;
 using Komi.lib.types.botinfo;
 using Komi.lib.utils;
+using MessagePack;
+using MessagePack.Resolvers;
+using Newtonsoft.Json;
 using Serilog;
 using Serilog.Core;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Komi.lib.bot;
 
@@ -417,6 +422,22 @@ public class Bot
         data.CopyTo(packetData, packetTypeByte.Length);
         
         Peer.Send(0, packetData, ENetPacketFlags.Reliable);
+    }
+
+    public void SendPacketRaw(TankPacket packet)
+    {
+        // sizeof(int) is the size of EPacketType
+        var packetSize = sizeof(int) + Marshal.SizeOf(typeof(TankPacket)) + (int)packet.ExtendedDataLength;
+        var enetPacketData = new byte[packetSize];
+        
+        const int packetType = (int)EPacketType.NetMessageGamePacket;
+        var packetTypeBytes = BitConverter.GetBytes(packetType);
+        Buffer.BlockCopy(packetTypeBytes, 0, enetPacketData, 0, packetTypeBytes.Length);
+        
+        var tankPacketBytes = Binary.StructToByteArray(packet);
+        Buffer.BlockCopy(tankPacketBytes, 0, enetPacketData, packetTypeBytes.Length, tankPacketBytes.Length);
+        
+        Peer.Send(0, enetPacketData, ENetPacketFlags.Reliable);
     }
 
     public void Disconnect()

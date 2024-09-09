@@ -15,9 +15,17 @@ cmake -S . -DBUILD_SHARED_LIBS=ON -B ./build
 cmake --build ./build --config Release
 ```
 - ENet.Managed as the ffi for the native library
-- Run dotnet run in the root directory
+- Run dotnet run in the project root directory
 
 ## Todo
 - [ ] Implement bot library
 - [x] Implement GUI
+- [ ] Item database GUI
+- [ ] Inventory GUI
+- [ ] World serializer
+- [ ] items.dat parser
+- [ ] World map
+- [ ] Find path
+- [x] Session token
+- [ ] Save account to JSON
 - [ ] To be added
