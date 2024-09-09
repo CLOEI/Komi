@@ -1,22 +1,24 @@
 ﻿using Komi.lib.bot;
+using Komi.lib.itemdatabase;
 using Komi.lib.types;
 
 namespace Komi.lib;
 
 public class Manager
 {
-    private List<Bot> bots { get; set; } = new();
-    
+    private List<Bot> Bots { get; set; } = new();
+    public ItemDatabase ItemDatabase { get; set; } = ItemDatabaseLoader.LoadFromFile(Directory.GetCurrentDirectory() + "/items.dat");
+
     public void AddBot(BotConfig config)
     {
-        var bot = new Bot(config);
+        var bot = new Bot(config, ItemDatabase);
         var thread = new Thread(() => bot.Logon(null))
         {
             IsBackground = true
         };
         thread.Start();
         
-        bots.Add(bot);
+        Bots.Add(bot);
     }
     
     public void RemoveBot(string username)
@@ -29,11 +31,11 @@ public class Manager
 
         bot.State.IsRunning = false;
         bot.Disconnect();
-        bots.Remove(bot);
+        Bots.Remove(bot);
     }
     
     public Bot? GetBot(string username)
     {
-        return bots.FirstOrDefault(bot => bot.Info.Username == username);
+        return Bots.FirstOrDefault(bot => bot.Info.Username == username);
     }
 }

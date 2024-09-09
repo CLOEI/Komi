@@ -58,7 +58,7 @@ namespace Komi.lib.gui
                 if (ImGui.BeginTabItem("Item Database"))
                 {
 
-                    ItemDatabase.Render();
+                    pages.ItemDatabase.Render();
                     ImGui.EndTabItem();
                 }
 

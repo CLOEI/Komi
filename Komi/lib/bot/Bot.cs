@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ENet.Managed;
+using Komi.lib.itemdatabase;
 using Komi.lib.types;
 using Komi.lib.types.botinfo;
 using Komi.lib.utils;
@@ -24,8 +25,9 @@ public class Bot
     private ENetHost Host { get; set; }
     private ENetPeer Peer { get; set; }
     private Logger Log { get; set; }
+    public ItemDatabase ItemDatabase { get; set; }
 
-    public Bot(BotConfig config)
+    public Bot(BotConfig config, ItemDatabase itemDatabase)
     {
         Log = new LoggerConfiguration()
             .WriteTo.Console()
@@ -42,6 +44,7 @@ public class Bot
         Server = new Server();
         Position = new Vector2();
         Ftue = new FTUE();
+        ItemDatabase = itemDatabase;
     }
 
     public void Logon(string? data)

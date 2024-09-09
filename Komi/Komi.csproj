@@ -13,6 +13,12 @@
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
+
+    <ItemGroup>
+        <None Update="items.dat">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
     
     <ItemGroup>
       <Content Include="ENet.Managed\ENet.Managed.csproj" />
