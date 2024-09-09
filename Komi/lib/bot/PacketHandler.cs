@@ -75,6 +75,9 @@ public class PacketHandler
                     case ETankPacketType.NetGamePacketSendInventoryState:
                         bot.Inventory.Parse(data.ToArray()[56..]);
                         break;
+                    case ETankPacketType.NetGamePacketSendMapData:
+                        bot.World.Parse(data.ToArray()[56..]);
+                        break;
                     case ETankPacketType.NetGamePacketPingRequest:
                     {
                         var packet = new TankPacket()

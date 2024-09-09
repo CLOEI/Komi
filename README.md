@@ -27,5 +27,9 @@ cmake --build ./build --config Release
 - [ ] World map
 - [ ] Find path
 - [x] Session token
-- [ ] Save account to JSON
+- [ ] Save account & session to JSON
+- [x] Legacy login
+- [ ] Google login
+- [ ] Steam login
+- [ ] Apple login
 - [ ] To be added

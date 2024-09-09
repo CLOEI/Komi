@@ -1,6 +1,5 @@
 ﻿using ENet.Managed;
 using Komi.lib;
-using Komi.lib.bot;
 using Komi.lib.types;
 using Komi.lib.gui;
 

@@ -5,12 +5,13 @@ using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using ENet.Managed;
-using Komi.lib.itemdatabase;
 using Komi.lib.types;
 using Komi.lib.types.botinfo;
 using Komi.lib.utils;
+using Komi.lib.world;
 using Serilog;
 using Serilog.Core;
+using ItemDatabase = Komi.lib.itemdatabase.ItemDatabase;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Komi.lib.bot;
@@ -27,6 +28,7 @@ public class Bot
     private Logger Log { get; set; }
     public ItemDatabase ItemDatabase { get; set; }
     public Inventory Inventory { get; set; }
+    public World World { get; set; }
 
     public Bot(BotConfig config, ItemDatabase itemDatabase)
     {
@@ -47,6 +49,7 @@ public class Bot
         Ftue = new FTUE();
         ItemDatabase = itemDatabase;
         Inventory = new Inventory();
+        World = new World(itemDatabase);
     }
 
     public void Logon(string? data)
