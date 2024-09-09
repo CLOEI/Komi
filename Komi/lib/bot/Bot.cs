@@ -541,4 +541,19 @@ public class Bot
         
         Log.Error("[{username}] {message}", username, message);
     }
+
+    public void LogWarning(string message)
+    {
+        string username;
+        if (string.IsNullOrEmpty(Info.LoginInfo.TankIdName))
+        {
+            username = Info.Username;
+        }
+        else
+        {
+            username = Info.LoginInfo.TankIdName;
+        }
+        
+        Log.Warning("[{username}] {message}", username, message);
+    }
 }

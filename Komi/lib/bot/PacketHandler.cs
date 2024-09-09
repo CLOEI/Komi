@@ -76,8 +76,15 @@ public class PacketHandler
                         bot.Inventory.Parse(data.ToArray()[56..]);
                         break;
                     case ETankPacketType.NetGamePacketSendMapData:
+                    {
+                        using (var fileStream = File.Create("world.dat"))
+                        {
+                            fileStream.Write(data[56..]);
+                        }
+                        bot.LogWarning("Created world.dat");
                         bot.World.Parse(data.ToArray()[56..]);
                         break;
+                    }
                     case ETankPacketType.NetGamePacketPingRequest:
                     {
                         var packet = new TankPacket()
