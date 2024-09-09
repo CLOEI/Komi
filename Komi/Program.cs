@@ -25,7 +25,7 @@ class Program
             manager.AddBot(bot);
         }
 
-        Menu renderer = new Menu();
+        Menu renderer = new Menu(manager);
         renderer.Start().Wait();
     }
 

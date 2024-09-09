@@ -9,6 +9,7 @@ using Komi.lib.types;
 using Komi.lib.types.botinfo;
 using Komi.lib.utils;
 using Komi.lib.world;
+using ProtoBuf.WellKnownTypes;
 using Serilog;
 using Serilog.Core;
 using ItemDatabase = Komi.lib.itemdatabase.ItemDatabase;
@@ -36,13 +37,14 @@ public class Bot
             .WriteTo.Console()
             .CreateLogger();
         var payload = TextParse.ParseAndStoreAsList(config.Payload);
-        
+
         Info = new Info()
         {
             Payload = payload,
             LoginMethod = config.LoginMethod,
             Token = config.Token,
             LoginInfo = new LoginInfo(),
+            Ping = 0
         };
         State = new State();
         Server = new Server();
@@ -52,7 +54,7 @@ public class Bot
         Inventory = new Inventory();
         World = new World(itemDatabase);
     }
-    
+
     private void ValidateLoginPayload()
     {
         int requiredPayloadCount = Info.LoginMethod == ELoginMethod.Steam ? 4 : 2;
@@ -67,7 +69,7 @@ public class Bot
     public void Logon(string? data)
     {
         ValidateLoginPayload();
-        
+
         if (string.IsNullOrEmpty(data))
         {
             Spoof();
@@ -79,6 +81,7 @@ public class Bot
 
         State.IsRunning = true;
         CreateHost();
+        Poll();
         PollEvent();
     }
 
@@ -198,7 +201,8 @@ public class Bot
                 break;
             case ELoginMethod.Steam:
                 Info.LoginInfo.PlatformId = "15,1,0";
-                token = Login.GetUbisoftToken(Info.LoginInfo.ToString(), Info.Payload[0], Info.Payload[1], Info.Payload[2], Info.Payload[3]);
+                token = Login.GetUbisoftToken(Info.LoginInfo.ToString(), Info.Payload[0], Info.Payload[1],
+                    Info.Payload[2], Info.Payload[3]);
                 break;
             default:
                 LogError("Invalid login method");
@@ -284,6 +288,29 @@ public class Bot
 
         GetToken();
         ConnectToServer(Info.ServerData["server"], int.Parse(Info.ServerData["port"]));
+    }
+
+    public void Poll()
+    {
+        Thread thread = new Thread(() =>
+        {
+            while (State.IsRunning)
+            {
+                try
+                {
+                    Info.Ping = Peer.RoundTripTime;
+                }
+                catch (Exception e)
+                {
+                    Info.Ping = 0;
+                }
+                Thread.Sleep(TimeSpan.FromSeconds(1));
+            }
+        })
+        {
+            IsBackground = true
+        };
+        thread.Start();
     }
 
     public List<string> GetOauthLinks()

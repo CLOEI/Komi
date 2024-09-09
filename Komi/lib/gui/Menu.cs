@@ -5,13 +5,14 @@ using Komi.lib.gui.pages;
 
 namespace Komi.lib.gui
 {
-    public class Menu : Overlay
+    public class Menu(Manager manager) : Overlay
     {
         private Vector2 windowSize = new Vector2(700, 400);
         private Vector2 windowPosition = new Vector2(0, 0);
         private static bool p_open = true;
         private static bool m_init = true;
         private ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoSavedSettings | ImGuiWindowFlags.NoCollapse;
+        public Manager Manager = manager;
 
         protected unsafe override void Render()
         {
@@ -51,7 +52,7 @@ namespace Komi.lib.gui
             {
                 if (ImGui.BeginTabItem("Bots"))
                 {
-                    Bots.Render();
+                    Bots.Render(manager);
                     ImGui.EndTabItem();
                 }
 

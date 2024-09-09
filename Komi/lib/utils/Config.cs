@@ -80,6 +80,15 @@ public class Config
         return config.SelectedBot;
     }
     
+    public static void EditSelectedBot(string selectedBot)
+    {
+        var config = ParseConfig();
+        config.SelectedBot = selectedBot;
+        var jsonString = JsonSerializer.Serialize(config, Options);
+        using var writer = File.Create("config.json");
+        writer.Write(Encoding.UTF8.GetBytes(jsonString));
+    }
+    
     public static string GetGameVersion()
     {
         var config = ParseConfig();
