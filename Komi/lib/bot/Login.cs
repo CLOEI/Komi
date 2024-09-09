@@ -2,6 +2,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using SteamKit2;
 
 namespace Komi.lib.bot;
 
@@ -117,6 +118,11 @@ public class Login
         var jsonString = response.Content.ReadAsStringAsync().Result;
         var json = JsonDocument.Parse(jsonString);
         return json.RootElement.GetProperty("token").GetString();
+    }
+
+    private static string GetSessionTokenFromSteam(string username, string password)
+    {
+        return "";
     }
 
     private static string? ExtractTokenFromHtml(string body)

@@ -28,6 +28,11 @@ class Program
         renderer.Start().Wait();
     }
 
+    /*
+     * Payload is dilimited by |
+     * Payload format: username|password|steamUser|steamPassword
+     * Payload length can be 4 if login method is Steam, else 2.
+     */
     static void InitConfig()
     {
         if (File.Exists("config.json")) return;
