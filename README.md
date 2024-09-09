@@ -26,7 +26,7 @@ cmake --build ./build --config Release
 - [ ] Inventory GUI
 - [x] World serializer ( Not Full )
 - [x] items.dat parser
-- [ ] World map
+- [x] World map
 - [ ] Find path
 - [x] Session token
 - [x] Save account & session to JSON
