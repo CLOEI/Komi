@@ -1,4 +1,5 @@
 ﻿using ImGuiNET;
+using Komi.lib.gui.pages.bot_tabs;
 
 namespace Komi.lib.gui.pages
 {
@@ -32,29 +33,27 @@ namespace Komi.lib.gui.pages
                 var bot = manager.GetBot(_selectedBot);
                 if (bot != null)
                 {
-                    ImGui.Text($"Display name: {bot.Info.LoginInfo.TankIdName}");
-                    ImGui.Text($"Status: {bot.Info.Status}");
-                    ImGui.SameLine();
-                    ImGui.Text($"| Timeout: {bot.Info.Timeout}");
-                    ImGui.Text($"Token: {bot.Info.Token}");
-                    ImGui.Text($"World: {bot.World.Name}");
-                    ImGui.Text($"Position: {(int)(bot.Position.X / 32)}, {(int)(bot.Position.Y / 32)}");
-                    ImGui.Text($"Ping: {bot.Info.Ping}");
-                    ImGui.Text($"RID: {bot.Info.LoginInfo.Rid}");
-
-                    if (ImGui.Button("Reconnect"))
+                    if (ImGui.BeginTabBar("BotTab"))
                     {
-                        // bot.Reconnect();
-                    }
-                    
-                    ImGui.InputText("World name", ref _worldName, 10);
-                    if (ImGui.Button("Warp"))
-                    {
-                        Thread thread = new Thread(() => bot.Warp(_worldName))
+                        if (ImGui.BeginTabItem("Info"))
                         {
-                            IsBackground = true
-                        };
-                        thread.Start();
+                            InfoPage.Render(manager, bot);
+                            ImGui.EndTabItem();
+                        }
+
+                        if (ImGui.BeginTabItem("World"))
+                        {
+                            WorldPage.Render(manager, bot);
+                            ImGui.EndTabItem();
+                        }
+
+                        if (ImGui.BeginTabItem("Inventory"))
+                        {
+                            InventoryPage.Render(manager, bot);
+                            ImGui.EndTabItem();
+                        }
+
+                        ImGui.EndTabBar();
                     }
                 }
             }

@@ -5,10 +5,10 @@ using Komi.lib.gui.pages;
 
 namespace Komi.lib.gui
 {
-    public class Menu(Manager manager) : Overlay
+    public class Menu(Manager manager) : Overlay("Komi", 3840, 2160)
     {
         private readonly Vector2 _windowSize = new(800, 450);
-        private Vector2 _windowPosition = new(0, 0);
+        private Vector2 _windowPosition = new Vector2(150, 150);
         private static bool _pOpen = true;
         private static bool _mInit = true;
 
@@ -29,12 +29,14 @@ namespace Komi.lib.gui
                             io.Fonts.GetGlyphRangesDefault());
                     }
                 });
-                Vector2 displaySize = io.DisplaySize;
 
-                _windowPosition = new Vector2(
-                    (displaySize.X - _windowSize.X) * 0.5f,
-                    (displaySize.Y - _windowSize.Y) * 0.5f
-                );
+                // disabled for now
+                //Vector2 displaySize = io.DisplaySize;
+
+                //_windowPosition = new Vector2(
+                //    (displaySize.X - _windowSize.X) * 0.5f,
+                //    (displaySize.Y - _windowSize.Y) * 0.5f
+                //);
 
                 _mInit = false;
             }
