@@ -8,9 +8,6 @@ using ENet.Managed;
 using Komi.lib.types;
 using Komi.lib.types.botinfo;
 using Komi.lib.utils;
-using MessagePack;
-using MessagePack.Resolvers;
-using Newtonsoft.Json;
 using Serilog;
 using Serilog.Core;
 using JsonSerializer = System.Text.Json.JsonSerializer;
@@ -509,11 +506,31 @@ public class Bot
 
     public void LogInfo(string message)
     {
-        Log.Information("[{username}] {message}", Info.Username, message);
+        string username;
+        if (string.IsNullOrEmpty(Info.LoginInfo.TankIdName))
+        {
+            username = Info.Username;
+        }
+        else
+        {
+            username = Info.LoginInfo.TankIdName;
+        }
+        
+        Log.Information("[{username}] {message}", username, message);
     }
 
     public void LogError(string message)
     {
-        Log.Error("[{username}] {message}", Info.Username, message);
+        string username;
+        if (string.IsNullOrEmpty(Info.LoginInfo.TankIdName))
+        {
+            username = Info.Username;
+        }
+        else
+        {
+            username = Info.LoginInfo.TankIdName;
+        }
+        
+        Log.Error("[{username}] {message}", username, message);
     }
 }
