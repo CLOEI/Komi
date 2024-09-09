@@ -26,6 +26,7 @@ public class Bot
     private ENetPeer Peer { get; set; }
     private Logger Log { get; set; }
     public ItemDatabase ItemDatabase { get; set; }
+    public Inventory Inventory { get; set; }
 
     public Bot(BotConfig config, ItemDatabase itemDatabase)
     {
@@ -45,6 +46,7 @@ public class Bot
         Position = new Vector2();
         Ftue = new FTUE();
         ItemDatabase = itemDatabase;
+        Inventory = new Inventory();
     }
 
     public void Logon(string? data)
