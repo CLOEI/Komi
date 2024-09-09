@@ -24,12 +24,12 @@ cmake --build ./build --config Release
 - [x] Implement GUI
 - [ ] Item database GUI
 - [ ] Inventory GUI
-- [ ] World serializer
-- [ ] items.dat parser
+- [x] World serializer ( Not Full )
+- [x] items.dat parser
 - [ ] World map
 - [ ] Find path
 - [x] Session token
-- [ ] Save account & session to JSON
+- [x] Save account & session to JSON
 - [x] Legacy login
 - [ ] Auto collect
 - [ ] Google login

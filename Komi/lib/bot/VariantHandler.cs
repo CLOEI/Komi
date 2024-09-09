@@ -71,6 +71,7 @@ public class VariantHandler
             {
                 var growid = variant.Get(2).AsString();
                 bot.Info.LoginInfo.TankIdName = growid;
+                utils.Config.SaveTokenToBot(bot.Info.Username, bot.Info.Token, bot.Info.LoginInfo.ToString());
                 break;
             }
             case "OnFtueButtonDataSet":

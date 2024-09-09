@@ -12,7 +12,7 @@ public class Manager
     public void AddBot(BotConfig config)
     {
         var bot = new Bot(config, ItemDatabase);
-        var thread = new Thread(() => bot.Logon(null))
+        var thread = new Thread(() => bot.Logon(config.Data))
         {
             IsBackground = true
         };

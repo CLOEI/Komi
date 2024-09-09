@@ -221,7 +221,7 @@ public class Bot
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
                     LogError("Failed to refresh token, retrying...");
-                    Thread.Sleep(1000);
+                    Sleep();
                     continue;
                 }
 
@@ -249,7 +249,7 @@ public class Bot
             catch (Exception ex)
             {
                 LogError($"Request error: {ex.Message}, retrying...");
-                Thread.Sleep(1000);
+                Sleep();
             }
         }
     }
@@ -287,7 +287,7 @@ public class Bot
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
                     Log.Warning("Failed to get OAuth links");
-                    Thread.Sleep(1000);
+                    Sleep();
                     continue;
                 }
 
@@ -309,7 +309,7 @@ public class Bot
             catch (Exception ex)
             {
                 LogError($"Request error: {ex.Message}, retrying...");
-                Thread.Sleep(1000);
+                Sleep();
             }
         }
     }
@@ -402,7 +402,7 @@ public class Bot
                 if (response.StatusCode != HttpStatusCode.OK)
                 {
                     LogError("Failed to connect to the server, retrying...");
-                    Thread.Sleep(1000);
+                    Sleep();
                     continue;
                 }
 
@@ -413,7 +413,7 @@ public class Bot
             catch (Exception e)
             {
                 LogError("Failed to connect to the server, retrying...");
-                Thread.Sleep(1000);
+                Sleep();
             }
         }
     }
@@ -503,13 +503,23 @@ public class Bot
             IntY = -1,
             Flags = 0 | (1 << 1) | (1 << 5)
         };
-        
+
         SendPacketRaw(packet);
     }
 
     public void Disconnect()
     {
         Peer.Disconnect(0);
+    }
+
+    public void Sleep()
+    {
+        Info.Timeout += utils.Config.GetTimeout();
+        while (Info.Timeout > 0)
+        {
+            Info.Timeout--;
+            Thread.Sleep(TimeSpan.FromSeconds(1));
+        }
     }
 
     public void LogInfo(string message)
@@ -523,7 +533,7 @@ public class Bot
         {
             username = Info.LoginInfo.TankIdName;
         }
-        
+
         Log.Information("[{username}] {message}", username, message);
     }
 
@@ -538,7 +548,7 @@ public class Bot
         {
             username = Info.LoginInfo.TankIdName;
         }
-        
+
         Log.Error("[{username}] {message}", username, message);
     }
 
@@ -553,7 +563,7 @@ public class Bot
         {
             username = Info.LoginInfo.TankIdName;
         }
-        
+
         Log.Warning("[{username}] {message}", username, message);
     }
 }

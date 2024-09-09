@@ -47,7 +47,7 @@ public class LoginInfo
         Fz = "47142936";
         F = "1";
         PlayerAge = "20";
-        GameVersion = "4.64";
+        GameVersion = utils.Config.GetGameVersion();
         LMode = "1";
         CBits = "1040";
         Rid = utils.Random.Hex(32, true);

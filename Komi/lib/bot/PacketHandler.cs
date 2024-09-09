@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using Komi.lib.types;
 
 namespace Komi.lib.bot;
@@ -22,46 +23,69 @@ public class PacketHandler
                 }
                 else
                 {
-                    var message = $"protocol|{loginInfo.Protocol}\\nltoken|{bot.Info.Token}\\nplatformID|{loginInfo.PlatformId}\\n";
+                    var message =
+                        $"protocol|{loginInfo.Protocol}\\nltoken|{bot.Info.Token}\\nplatformID|{loginInfo.PlatformId}\\n";
                     bot.SendPacket(EPacketType.NetMessageGenericText, message);
                 }
+
                 break;
             }
             case EPacketType.NetMessageGameMessage:
             {
                 var message = Encoding.UTF8.GetString(data);
                 bot.LogInfo($"Received game message: {message}");
-                
+
                 if (message.Contains("logon_fail"))
                 {
                     bot.State.IsRedirecting = false;
                     bot.Disconnect();
                 }
+
                 if (message.Contains("currently banned"))
                 {
                     bot.State.IsRunning = false;
                     bot.State.IsBanned = true;
                     bot.Disconnect();
                 }
+
                 if (message.Contains("Advanced Account Protection"))
                 {
                     bot.State.IsRunning = false;
                     bot.Disconnect();
                 }
+
                 if (message.Contains("temporarily suspended"))
                 {
                     bot.State.IsRunning = false;
                     bot.Disconnect();
                 }
+
                 if (message.Contains("has been suspended"))
                 {
                     bot.State.IsRunning = false;
                     bot.State.IsBanned = true;
                     bot.Disconnect();
                 }
-                
+
+                if (message.Contains("UPDATE REQUIRED"))
+                {
+                    var regex = new Regex(@"\$V(\d+\.\d+)");
+                    var match = regex.Match(message);
+                    if (match.Success)
+                    {
+                        var version = match.Groups[1].Value;
+                        bot.LogWarning($"Update required: {version}, updating...");
+
+                        bot.Info.LoginInfo.GameVersion = version;
+
+                        utils.Config.EditGameVersion(version);
+                        utils.Config.SaveTokenToBot(bot.Info.Username, string.Empty, string.Empty);
+                    }
+                }
+
                 break;
             }
+
             case EPacketType.NetMessageGamePacket:
             {
                 var tankPacket = MemoryMarshal.Read<TankPacket>(data);
@@ -81,6 +105,7 @@ public class PacketHandler
                         {
                             fileStream.Write(data[56..]);
                         }
+
                         bot.LogWarning("Created world.dat");
                         bot.World.Parse(data.ToArray()[56..]);
                         break;
@@ -101,7 +126,7 @@ public class PacketHandler
                         break;
                     }
                 }
-                
+
                 break;
             }
         }
