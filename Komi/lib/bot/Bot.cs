@@ -344,13 +344,14 @@ public class Bot
                         var packetType = (EPacketType)packetId;
                         LogInfo($"Received packet type: {packetType}");
                         PacketHandler.Handle(this, packetType, packetData[4..]);
-                        
+
                         enetEvent.Packet.Destroy();
                         continue;
                     case ENetEventType.Disconnect:
                         LogInfo("Disconnected from the server");
                         break;
                 }
+
                 break;
             }
         }
@@ -416,11 +417,11 @@ public class Bot
     {
         var packetTypeByte = BitConverter.GetBytes((int)packetType);
         var data = Encoding.ASCII.GetBytes(message);
-        
+
         var packetData = new byte[packetTypeByte.Length + data.Length];
         packetTypeByte.CopyTo(packetData, 0);
         data.CopyTo(packetData, packetTypeByte.Length);
-        
+
         Peer.Send(0, packetData, ENetPacketFlags.Reliable);
     }
 
@@ -429,15 +430,76 @@ public class Bot
         // sizeof(int) is the size of EPacketType
         var packetSize = sizeof(int) + Marshal.SizeOf(typeof(TankPacket)) + (int)packet.ExtendedDataLength;
         var enetPacketData = new byte[packetSize];
-        
+
         const int packetType = (int)EPacketType.NetMessageGamePacket;
         var packetTypeBytes = BitConverter.GetBytes(packetType);
         Buffer.BlockCopy(packetTypeBytes, 0, enetPacketData, 0, packetTypeBytes.Length);
-        
+
         var tankPacketBytes = Binary.StructToByteArray(packet);
         Buffer.BlockCopy(tankPacketBytes, 0, enetPacketData, packetTypeBytes.Length, tankPacketBytes.Length);
-        
+
         Peer.Send(0, enetPacketData, ENetPacketFlags.Reliable);
+    }
+
+    public void Place(int offsetX, int offsetY, uint itemId)
+    {
+        var packet = new TankPacket()
+        {
+            Type = ETankPacketType.NetGamePacketTileChangeRequest,
+            VectorX = Position.X,
+            VectorY = Position.Y,
+            IntX = (int)(Math.Floor(Position.X / 32.0) + offsetX),
+            IntY = (int)(Math.Floor(Position.Y / 32.0) + offsetY),
+            Value = itemId
+        };
+
+        var (xPos, yPos) = ((int)(Position.X / 32.0), (int)(Position.Y / 32.0));
+
+        if (packet.IntX <= xPos + 4 && packet.IntX >= xPos - 4 && packet.IntY <= yPos + 4 && packet.IntY >= yPos - 4)
+        {
+            SendPacketRaw(packet);
+        }
+    }
+
+    public void Punch(int offsetX, int offsetY)
+    {
+        Place(offsetX, offsetY, 18);
+    }
+
+    public void Warp(string worldName)
+    {
+        SendPacket(EPacketType.NetMessageGameMessage, $"action|join_request\nname|{worldName}\ninvitedWorld|0\n");
+    }
+
+    public void Talk(string message)
+    {
+        SendPacket(EPacketType.NetMessageGameMessage, $"action|input\n|text|{message}\n");
+    }
+
+    public void Leave()
+    {
+        SendPacket(EPacketType.NetMessageGameMessage, $"action|quit_to_exit\n");
+    }
+
+    public void Walk(int x, int y, bool ap)
+    {
+        if (!ap)
+        {
+            Position.X += (x * 32);
+            Position.Y += (y * 32);
+        }
+
+        var packet = new TankPacket()
+        {
+            Type = ETankPacketType.NetGamePacketState,
+            VectorX = Position.X,
+            VectorY = Position.Y,
+            IntX = -1,
+            IntY = -1,
+            Flags = 0 | (1 << 1) | (1 << 5)
+        };
+        
+        SendPacketRaw(packet);
     }
 
     public void Disconnect()
