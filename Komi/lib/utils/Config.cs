@@ -36,10 +36,12 @@ public class Config
     public static void RemoveBot(string username)
     {
         var config = ParseConfig();
-        config.Bots.RemoveAll(bot => bot.Username == username);
-        var jsonString = JsonSerializer.Serialize(config, Options);
-        using var writer = File.Create("config.json");
-        writer.Write(Encoding.UTF8.GetBytes(jsonString));
+        for (var i = 0; i < config.Bots.Count; i++)
+        {
+            var payload = TextParse.ParseAndStoreAsList(config.Bots[i].Payload);
+            if (payload[0] != username) continue;
+            config.Bots.RemoveAt(i);
+        }
     }
     
     public static uint GetTimeout()
@@ -98,7 +100,8 @@ public class Config
         var config = ParseConfig();
         for (var i = 0; i < config.Bots.Count; i++)
         {
-            if (config.Bots[i].Username != username) continue;
+            var payload = TextParse.ParseAndStoreAsList(config.Bots[i].Payload);
+            if (payload[0] != username) continue;
             var bot = config.Bots[i];
             bot.Token = token;
             bot.Data = data;

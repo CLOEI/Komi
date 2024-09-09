@@ -35,10 +35,11 @@ public class Bot
         Log = new LoggerConfiguration()
             .WriteTo.Console()
             .CreateLogger();
+        var payload = TextParse.ParseAndStoreAsList(config.Payload);
+        
         Info = new Info()
         {
-            Username = config.Username,
-            Password = config.Password,
+            Payload = payload,
             LoginMethod = config.LoginMethod,
             Token = config.Token,
             LoginInfo = new LoginInfo(),
@@ -51,9 +52,22 @@ public class Bot
         Inventory = new Inventory();
         World = new World(itemDatabase);
     }
+    
+    private void ValidateLoginPayload()
+    {
+        int requiredPayloadCount = Info.LoginMethod == ELoginMethod.Steam ? 4 : 2;
+
+        if (Info.Payload.Count < requiredPayloadCount)
+        {
+            LogError("Invalid login payload");
+            throw new Exception("Invalid login payload"); // For a moment, let's just throw an exception
+        }
+    }
 
     public void Logon(string? data)
     {
+        ValidateLoginPayload();
+        
         if (string.IsNullOrEmpty(data))
         {
             Spoof();
@@ -180,7 +194,10 @@ public class Bot
         switch (Info.LoginMethod)
         {
             case ELoginMethod.Legacy:
-                token = Login.GetLegacyToken(Info.OauthLinks[2], Info.Username, Info.Password);
+                token = Login.GetLegacyToken(Info.OauthLinks[2], Info.Payload[0], Info.Payload[1]);
+                break;
+            case ELoginMethod.Steam:
+                token = Login.GetUbisoftToken(Info.LoginInfo.ToString(), Info.Payload[0], Info.Payload[1], Info.Payload[2], Info.Payload[3]);
                 break;
             default:
                 LogError("Invalid login method");
@@ -280,7 +297,7 @@ public class Bot
                 client.DefaultRequestHeaders.Add("User-Agent",
                     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36 Edg/128.0.0.0");
                 var content = new StringContent(WebUtility.UrlEncode(Info.LoginInfo.ToString()),
-                    System.Text.Encoding.UTF8, "application/x-www-form-urlencoded");
+                    Encoding.UTF8, "application/x-www-form-urlencoded");
                 var response = client.PostAsync("https://login.growtopiagame.com/player/login/dashboard", content)
                     .Result;
 
@@ -525,14 +542,7 @@ public class Bot
     public void LogInfo(string message)
     {
         string username;
-        if (string.IsNullOrEmpty(Info.LoginInfo.TankIdName))
-        {
-            username = Info.Username;
-        }
-        else
-        {
-            username = Info.LoginInfo.TankIdName;
-        }
+        username = string.IsNullOrEmpty(Info.LoginInfo.TankIdName) ? Info.Payload[0] : Info.LoginInfo.TankIdName;
 
         Log.Information("[{username}] {message}", username, message);
     }
@@ -540,14 +550,7 @@ public class Bot
     public void LogError(string message)
     {
         string username;
-        if (string.IsNullOrEmpty(Info.LoginInfo.TankIdName))
-        {
-            username = Info.Username;
-        }
-        else
-        {
-            username = Info.LoginInfo.TankIdName;
-        }
+        username = string.IsNullOrEmpty(Info.LoginInfo.TankIdName) ? Info.Payload[0] : Info.LoginInfo.TankIdName;
 
         Log.Error("[{username}] {message}", username, message);
     }
@@ -555,14 +558,7 @@ public class Bot
     public void LogWarning(string message)
     {
         string username;
-        if (string.IsNullOrEmpty(Info.LoginInfo.TankIdName))
-        {
-            username = Info.Username;
-        }
-        else
-        {
-            username = Info.LoginInfo.TankIdName;
-        }
+        username = string.IsNullOrEmpty(Info.LoginInfo.TankIdName) ? Info.Payload[0] : Info.LoginInfo.TankIdName;
 
         Log.Warning("[{username}] {message}", username, message);
     }

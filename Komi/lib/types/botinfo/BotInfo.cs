@@ -2,8 +2,7 @@
 {
     public class Info
     {
-        public string Username { get; set; }
-        public string Password { get; set; }
+        public List<string> Payload { get; set; }
         public ELoginMethod LoginMethod { get; set; }
         public List<string> OauthLinks { get; set; }
         public Dictionary<string, string> ServerData { get; set; }

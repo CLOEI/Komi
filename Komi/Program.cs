@@ -5,47 +5,46 @@ using Komi.lib;
 using Komi.lib.types;
 using Komi.lib.gui;
 
-namespace Komi
+namespace Komi;
+
+class Program
 {
-    class Program
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
+        InitConfig();
+        var startupConfig = new ENetStartupOptions
         {
-            InitConfig();
-            var startupConfig = new ENetStartupOptions
-            {
-                ModulePath = Directory.GetCurrentDirectory() + "/enet.dll"
-            };
-            ManagedENet.Startup(startupConfig);
-            var manager = new Manager();
-            var bots = lib.utils.Config.GetBots();
-            foreach (var bot in bots)
-            {
-                manager.AddBot(bot);
-            }
-
-            Menu renderer = new Menu();
-            renderer.Start().Wait();
+            ModulePath = Directory.GetCurrentDirectory() + "/enet.dll"
+        };
+        ManagedENet.Startup(startupConfig);
+        var manager = new Manager();
+        var bots = lib.utils.Config.GetBots();
+        foreach (var bot in bots)
+        {
+            manager.AddBot(bot);
         }
 
-        static void InitConfig()
-        {
-            if (File.Exists("config.json")) return;
-            var config = new Config()
-            {
-                GameVersion = "4.64",
-                Timeout = 5,
-                FindPathDelay = 30,
-                Bots = new List<BotConfig>(),
-                SelectedBot = ""
-            };
+        Menu renderer = new Menu();
+        renderer.Start().Wait();
+    }
 
-            var jsonString = JsonSerializer.Serialize(config, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
-            using var writer = File.Create("config.json");
-            writer.Write(Encoding.UTF8.GetBytes(jsonString));
-        }
+    static void InitConfig()
+    {
+        if (File.Exists("config.json")) return;
+        var config = new Config()
+        {
+            GameVersion = "4.64",
+            Timeout = 5,
+            FindPathDelay = 30,
+            Bots = new List<BotConfig>(),
+            SelectedBot = ""
+        };
+
+        var jsonString = JsonSerializer.Serialize(config, new JsonSerializerOptions
+        {
+            WriteIndented = true
+        });
+        using var writer = File.Create("config.json");
+        writer.Write(Encoding.UTF8.GetBytes(jsonString));
     }
 }

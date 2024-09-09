@@ -36,6 +36,6 @@ public class Manager
     
     public Bot? GetBot(string username)
     {
-        return Bots.FirstOrDefault(bot => bot.Info.Username == username);
+        return Bots.FirstOrDefault(bot => bot.Info.Payload[0] == username);
     }
 }

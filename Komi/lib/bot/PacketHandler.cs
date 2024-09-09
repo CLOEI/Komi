@@ -79,7 +79,7 @@ public class PacketHandler
                         bot.Info.LoginInfo.GameVersion = version;
 
                         utils.Config.EditGameVersion(version);
-                        utils.Config.SaveTokenToBot(bot.Info.Username, string.Empty, string.Empty);
+                        utils.Config.SaveTokenToBot(bot.Info.Payload[0], string.Empty, string.Empty);
                     }
                 }
 

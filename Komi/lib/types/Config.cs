@@ -11,8 +11,7 @@
     
     public struct BotConfig
     {
-        public string Username { get; set; }
-        public string Password { get; set; }
+        public string Payload { get; set; }
         public ELoginMethod LoginMethod { get; set; }
         public string Token { get; set; }
         public string Data { get; set; }
