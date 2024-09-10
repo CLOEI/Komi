@@ -33,7 +33,7 @@ public class World
         CurrentWeather = 0;
     }
 
-    public Tile GetTile(uint x, uint y)
+    public Tile? GetTile(uint x, uint y)
     {
         if (x >= Width || y >= Height)
             return null;

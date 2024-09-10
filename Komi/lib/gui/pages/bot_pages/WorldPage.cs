@@ -82,6 +82,14 @@ namespace Komi.lib.gui.pages.bot_pages
             {
                 AutoTutorial.LockTheWorld(bot);
             }
+            if (ImGui.Button("Auto clear world"))
+            {
+                var thread = new Thread(() => AutoClearWorld.Start(bot))
+                {
+                    IsBackground = true
+                };
+                thread.Start();
+            }
             ImGui.End();
         }
     }

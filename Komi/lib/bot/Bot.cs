@@ -554,7 +554,7 @@ public class Bot
 
     public bool IsInWorld()
     {
-        return World.Name != "EXIT";
+        return World?.Name != "EXIT";
     }
 
     public void Place(int offsetX, int offsetY, uint itemId)
