@@ -15,7 +15,7 @@ public class Inventory
         stream.Position += 1;
         Size = reader.ReadUInt32();
         ItemCount = reader.ReadUInt16();
-        for (int i = 0; i < ItemCount; i++)
+        for (var i = 0; i < ItemCount; i++)
         {
             var id = reader.ReadUInt16();
             var amount = reader.ReadUInt16();
