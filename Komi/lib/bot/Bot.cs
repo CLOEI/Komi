@@ -298,7 +298,10 @@ public class Bot
             {
                 try
                 {
-                    Info.Ping = Peer.RoundTripTime;
+                    if (!Peer.IsNull)
+                    {
+                        Info.Ping = Peer.RoundTripTime;
+                    }
                 }
                 catch (Exception)
                 {
