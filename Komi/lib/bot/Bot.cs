@@ -304,7 +304,7 @@ public class Bot
 
     private void Poll()
     {
-        Thread thread = new Thread(() =>
+        var thread = new Thread(() =>
         {
             while (State.IsRunning)
             {
@@ -313,13 +313,15 @@ public class Bot
                     if (!Peer.IsNull)
                     {
                         Info.Ping = Peer.RoundTripTime;
+                        Collect(this);
                     }
                 }
                 catch (Exception)
                 {
                     Info.Ping = 0;
                 }
-                Thread.Sleep(TimeSpan.FromSeconds(1));
+
+                Thread.Sleep(TimeSpan.FromMilliseconds(500));
             }
         })
         {
@@ -397,7 +399,7 @@ public class Bot
                     case ENetEventType.None:
                         continue;
                     case ENetEventType.Connect:
-                        SetStatus("Online");   
+                        SetStatus("Online");
                         LogInfo("Connected to the server");
                         continue;
                     case ENetEventType.Receive:
@@ -512,6 +514,49 @@ public class Bot
         Peer.Send(0, enetPacketData, ENetPacketFlags.Reliable);
     }
 
+    public static void Collect(Bot bot)
+    {
+        if (bot.World == null) return;
+        if (!bot.IsInWorld())
+        {
+            return;
+        }
+
+        var botX = bot.Position.X;
+        var botY = bot.Position.Y;
+        var items = bot.World.Dropped.Items;
+
+        foreach (var obj in items)
+        {
+            var dx = Math.Abs(botX - obj.X) / 32.0f;
+            var dy = Math.Abs(botY - obj.Y) / 32.0f;
+            var distance = Math.Sqrt(dx * dx + dy * dy);
+            if (!(distance <= 5.0)) continue;
+            var canCollect = true;
+
+            if (bot.Inventory.Items.TryGetValue(obj.Id, out var item))
+            {
+                if (item.Amount >= 200) continue;
+            }
+
+            if (!canCollect) continue;
+            var pkt = new TankPacket
+            {
+                Type = ETankPacketType.NetGamePacketItemActivateObjectRequest,
+                VectorX = obj.X,
+                VectorY = obj.Y,
+                Value = obj.Uid
+            };
+            bot.SendPacketRaw(pkt);
+            bot.LogInfo("Collect packet sent");
+        }
+    }
+
+    public bool IsInWorld()
+    {
+        return World.Name != "EXIT";
+    }
+
     public void Place(int offsetX, int offsetY, uint itemId)
     {
         var packet = new TankPacket()
@@ -544,9 +589,10 @@ public class Bot
             LogError("AStar is not initialized");
             return;
         }
+
         var paths = AStar.FindPath((uint)(Position.X / 32.0), (uint)(Position.Y / 32.0), x, y);
         var delay = utils.Config.GetFindPathDelay();
-        
+
         foreach (var path in paths)
         {
             Position.X = path.X * 32f;

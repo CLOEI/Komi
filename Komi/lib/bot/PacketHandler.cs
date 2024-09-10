@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using Komi.lib.types;
 using Komi.lib.world;
+using Serilog;
 
 namespace Komi.lib.bot;
 
@@ -175,8 +176,6 @@ public class PacketHandler
                     }
                     case ETankPacketType.NetGamePacketItemChangeObject:
                     {
-                        bot.LogInfo($"ItemChangeObject: {tankPacket}");
-
                         if (tankPacket.NetId == uint.MaxValue)
                         {
                             var item = new DroppedItem()
@@ -260,7 +259,7 @@ public class PacketHandler
                 }
 
                 break;
-                }
             }
         }
     }
+}
