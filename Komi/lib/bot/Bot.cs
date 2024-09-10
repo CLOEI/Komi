@@ -9,7 +9,6 @@ using Komi.lib.types;
 using Komi.lib.types.botinfo;
 using Komi.lib.utils;
 using Komi.lib.world;
-using ProtoBuf.WellKnownTypes;
 using Serilog;
 using Serilog.Core;
 using ItemDatabase = Komi.lib.itemdatabase.ItemDatabase;
@@ -24,12 +23,13 @@ public class Bot
     public Server Server { get; set; }
     public Vector2 Position { get; set; }
     public FTUE Ftue { get; set; }
-    private ENetHost Host { get; set; }
+    private ENetHost Host { get; set; } = null!;
     private ENetPeer Peer { get; set; }
     private Logger Log { get; set; }
     public ItemDatabase ItemDatabase { get; set; }
     public Inventory Inventory { get; set; }
-    public World World { get; set; }
+    public World? World { get; set; }
+    public AStar? AStar { get; set; }
 
     public Bot(BotConfig config, ItemDatabase itemDatabase)
     {
@@ -53,6 +53,7 @@ public class Bot
         ItemDatabase = itemDatabase;
         Inventory = new Inventory();
         World = new World(itemDatabase);
+        AStar = new AStar(itemDatabase);
     }
 
     private void ValidateLoginPayload()
@@ -517,6 +518,25 @@ public class Bot
     public void Punch(int offsetX, int offsetY)
     {
         Place(offsetX, offsetY, 18);
+    }
+
+    public void FindPath(uint x, uint y)
+    {
+        if (AStar == null)
+        {
+            LogError("AStar is not initialized");
+            return;
+        }
+        var paths = AStar.FindPath((uint)(Position.X / 32.0), (uint)(Position.Y / 32.0), x, y);
+        var delay = utils.Config.GetFindPathDelay();
+        
+        foreach (var path in paths)
+        {
+            Position.X = path.X * 32f;
+            Position.Y = path.Y * 32f;
+            Walk((int)path.X, (int)path.Y, true);
+            Thread.Sleep(TimeSpan.FromMilliseconds(delay));
+        }
     }
 
     public void Warp(string worldName)

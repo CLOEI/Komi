@@ -108,6 +108,7 @@ public class PacketHandler
 
                         bot.LogWarning("Created world.dat");
                         bot.World.Parse(data.ToArray()[56..]);
+                        bot.AStar.Update(bot.World);
                         break;
                     }
                     case ETankPacketType.NetGamePacketPingRequest:

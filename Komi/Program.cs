@@ -4,13 +4,12 @@ using ENet.Managed;
 using Komi.lib;
 using Komi.lib.types;
 using Komi.lib.gui;
-using Microsoft.VisualBasic.CompilerServices;
 
 namespace Komi;
 
 class Program
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
         InitConfig();
         var startupConfig = new ENetStartupOptions
@@ -42,7 +41,7 @@ class Program
             GameVersion = "4.64",
             Timeout = 5,
             FindPathDelay = 30,
-            Bots = new List<BotConfig>(),
+            Bots = [],
             SelectedBot = ""
         };
 

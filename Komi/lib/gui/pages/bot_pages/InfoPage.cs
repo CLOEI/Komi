@@ -1,7 +1,7 @@
 ﻿using ImGuiNET;
 using Komi.lib.bot;
 
-namespace Komi.lib.gui.pages.bot_tabs
+namespace Komi.lib.gui.pages.bot_pages
 {
     internal class InfoPage
     {

@@ -1,5 +1,5 @@
 ﻿using ImGuiNET;
-using Komi.lib.gui.pages.bot_tabs;
+using Komi.lib.gui.pages.bot_pages;
 
 namespace Komi.lib.gui.pages
 {
