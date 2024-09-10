@@ -99,8 +99,8 @@ namespace Komi.lib.gui
             colors[(int)ImGuiCol.FrameBgHovered] = new Vector4(0.19f, 0.2f, 0.25f, 1.0f);
             colors[(int)ImGuiCol.FrameBgActive] = new Vector4(0.16f, 0.16f, 0.21f, 1.0f);
             colors[(int)ImGuiCol.Tab] = new Vector4(0.16f, 0.16f, 0.21f, 1.0f);
-            colors[(int)ImGuiCol.TabHovered] = new Vector4(1.0f, 0.1f, 0.6f, 1.0f);
-            colors[(int)ImGuiCol.TabSelected] = new Vector4(1.0f, 0.0f, 0.5f, 1.0f);
+            colors[(int)ImGuiCol.TabHovered] = new Vector4(0.16f, 0.16f, 0.21f, 1.0f);
+            colors[(int)ImGuiCol.TabSelected] = new Vector4(0.1f, 0.1f, 0.13f, 1.0f);
             colors[(int)ImGuiCol.TitleBg] = new Vector4(0.16f, 0.16f, 0.21f, 1.0f);
             colors[(int)ImGuiCol.TitleBgActive] = new Vector4(0.16f, 0.16f, 0.21f, 1.0f);
             colors[(int)ImGuiCol.TitleBgCollapsed] = new Vector4(0.16f, 0.16f, 0.21f, 1.0f);
