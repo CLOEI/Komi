@@ -44,7 +44,8 @@ public class Bot
             LoginMethod = config.LoginMethod,
             Token = config.Token,
             LoginInfo = new LoginInfo(),
-            Ping = 0
+            Ping = 0,
+            Status = "Offline",
         };
         State = new State();
         Server = new Server();
@@ -67,8 +68,14 @@ public class Bot
         }
     }
 
+    public void SetStatus(string message)
+    {
+        Info.Status = message;
+    }
+
     public void Logon(string? data)
     {
+        SetStatus("logging in...");
         ValidateLoginPayload();
 
         if (string.IsNullOrEmpty(data))
@@ -88,6 +95,7 @@ public class Bot
 
     private void UpdateLoginInfo(string data)
     {
+        SetStatus("Updating login info");
         var parsedData = TextParse.ParseAndStoreAsDic(data);
 
         foreach (var kvp in parsedData)
@@ -192,6 +200,7 @@ public class Bot
             return;
         }
 
+        SetStatus("Getting token");
         LogInfo("Getting token for bot");
         var token = "";
 
@@ -222,6 +231,7 @@ public class Bot
 
     private bool IsTokenStillValid()
     {
+        SetStatus("Checking refresh token");
         LogInfo("Checking if token is still valid");
 
         while (true)
@@ -279,6 +289,7 @@ public class Bot
 
     public void Reconnect()
     {
+        SetStatus("Reconnecting...");
         ToHttp();
         Info.LoginInfo.Meta = Info.ServerData["meta"];
 
@@ -319,6 +330,7 @@ public class Bot
 
     private List<string> GetOauthLinks()
     {
+        SetStatus("Getting OAuth links");
         LogInfo("Getting OAuth links");
 
         while (true)
@@ -385,6 +397,7 @@ public class Bot
                     case ENetEventType.None:
                         continue;
                     case ENetEventType.Connect:
+                        SetStatus("Online");   
                         LogInfo("Connected to the server");
                         continue;
                     case ENetEventType.Receive:
@@ -402,6 +415,7 @@ public class Bot
                         enetEvent.Packet.Destroy();
                         continue;
                     case ENetEventType.Disconnect:
+                        SetStatus("Offline");
                         LogInfo("Disconnected from the server");
                         break;
                 }
@@ -413,6 +427,7 @@ public class Bot
 
     public void Spoof()
     {
+        SetStatus("Spoofing bot data");
         LogInfo("Spoofing bot data");
         Info.LoginInfo.Klv =
             Proton.GenerateKlv(Info.LoginInfo.Protocol, Info.LoginInfo.GameVersion, Info.LoginInfo.Rid);
@@ -430,6 +445,7 @@ public class Bot
 
     private void ConnectToServer(string ip, int port)
     {
+        SetStatus("Connecting to server");
         LogInfo("Connecting to " + ip + ":" + port);
         var remoteEndPoint = new IPEndPoint(IPAddress.Parse(ip), port);
         Peer = Host.Connect(remoteEndPoint, 2, 0);
@@ -437,6 +453,7 @@ public class Bot
 
     private void ToHttp()
     {
+        SetStatus("Fetching server data");
         while (true)
         {
             try

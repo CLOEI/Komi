@@ -8,7 +8,7 @@ namespace Komi.lib.gui
     public class Menu(Manager manager) : Overlay("Komi", 3840, 2160)
     {
         private readonly Vector2 _windowSize = new(800, 450);
-        private Vector2 _windowPosition = new Vector2(150, 150);
+        private readonly Vector2 _windowPosition = new Vector2(150, 150);
         private static bool _pOpen = true;
         private static bool _mInit = true;
 
