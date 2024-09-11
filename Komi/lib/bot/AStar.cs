@@ -8,114 +8,166 @@ public class AStar(ItemDatabase itemDatabase)
     private uint Width { get; set; }
     private uint Height { get; set; }
     private List<Node> Grid { get; set; } = [];
+
     private ItemDatabase ItemDatabase { get; set; } = itemDatabase;
+
+    private readonly object _gridLock = new();
 
     public void Reset()
     {
-        Width = 0;
-        Height = 0;
-        Grid.Clear();
+        lock (_gridLock)
+        {
+            Width = 0;
+            Height = 0;
+            Grid.Clear();
+        }
     }
 
     public void Update(World? world)
     {
         Reset();
-        if (world == null) return;
-        Width = world.Width;
-        Height = world.Height;
 
-        for (int i = 0; i < world.Tiles.Count; i++)
+        if (world == null) return;
+
+        lock (_gridLock)
         {
-            var node = new Node();
-            node.X = (uint)(i % world.Width);
-            node.Y = (uint)(i / world.Width);
-            var item = ItemDatabase.GetItem(world.Tiles[i].ForegroundItemId);
-            node.CollisionType = item.CollisionType;
-            Grid.Add(node);
+            Width = world.Width;
+            Height = world.Height;
+
+            for (var i = 0; i < world.Tiles.Count; i++)
+            {
+                var node = new Node
+                {
+                    X = (uint)(i % world.Width),
+                    Y = (uint)(i / world.Width),
+                    CollisionType = ItemDatabase.GetItem(world.Tiles[i].ForegroundItemId).CollisionType
+                };
+                Grid.Add(node);
+            }
         }
     }
 
     public List<Node> FindPath(uint fromX, uint fromY, uint toX, uint toY)
     {
-        List<Node> openList = new List<Node>();
-        List<Node> closedList = new List<Node>();
-        Dictionary<(uint, uint), (uint, uint)> cameFrom = new Dictionary<(uint, uint), (uint, uint)>();
-
-        int startIndex = (int)(fromY * Width + fromX);
-        Node startNode = Grid[startIndex];
-        startNode.G = 0;
-        startNode.H = CalculateH(fromX, fromY, toX, toY);
-        startNode.F = startNode.G + startNode.H;
-        openList.Add(startNode);
-
-        while (openList.Count > 0)
+        lock (_gridLock)
         {
-            var currentIndex = openList.Select((node, index) => new { node.F, index }).OrderBy(n => n.F).First().index;
-            var currentNode = openList[currentIndex];
-            openList.RemoveAt(currentIndex);
+            if (Grid.Count == 0) return null;
 
-            if (currentNode.X == toX && currentNode.Y == toY)
+            var startIndex = (int)(fromY * Width + fromX);
+            var goalIndex = (int)(toY * Width + toX);
+
+            if (!IsValidNode(startIndex) || !IsValidNode(goalIndex))
             {
-                return ReconstructPath(cameFrom, (toX, toY), (fromX, fromY));
+                return null;
             }
 
-            List<Node> children = GetNeighbors(currentNode);
+            var openStart = new List<Node>();
+            var openGoal = new List<Node>();
+            var closedStart = new HashSet<(uint, uint)>();
+            var closedGoal = new HashSet<(uint, uint)>();
 
-            foreach (Node child in children)
+            var cameFromStart = new Dictionary<(uint, uint), (uint, uint)>();
+            var cameFromGoal = new Dictionary<(uint, uint), (uint, uint)>();
+
+            var startNode = Grid[startIndex];
+            startNode.G = 0;
+            startNode.H = CalculateH(fromX, fromY, toX, toY);
+            startNode.F = startNode.G + startNode.H;
+            openStart.Add(startNode);
+
+            var goalNode = Grid[goalIndex];
+            goalNode.G = 0;
+            goalNode.H = CalculateH(toX, toY, fromX, fromY);
+            goalNode.F = goalNode.G + goalNode.H;
+            openGoal.Add(goalNode);
+
+            while (openStart.Count > 0 && openGoal.Count > 0)
             {
-                if (closedList.Any(n => n.X == child.X && n.Y == child.Y))
+                if (Step(openStart, closedStart, cameFromStart, closedGoal, (fromX, fromY), (toX, toY), true, out var meetingNode))
                 {
-                    continue;
+                    return ReconstructPathBidirectional(cameFromStart, cameFromGoal, meetingNode, (fromX, fromY), (toX, toY));
                 }
 
-                child.G = currentNode.G + 1;
-                child.H = CalculateH(child.X, child.Y, toX, toY);
-                child.F = child.G + child.H;
-
-                var openNode = openList.FirstOrDefault(n => n.X == child.X && n.Y == child.Y);
-                if (openNode != null && child.G > openNode.G)
+                if (Step(openGoal, closedGoal, cameFromGoal, closedStart, (toX, toY), (fromX, fromY), false, out meetingNode))
                 {
-                    continue;
+                    return ReconstructPathBidirectional(cameFromStart, cameFromGoal, meetingNode, (fromX, fromY), (toX, toY));
                 }
-
-                cameFrom[(child.X, child.Y)] = (currentNode.X, currentNode.Y);
-                openList.Add(child);
             }
 
-            closedList.Add(currentNode);
+            return null;
+        }
+    }
+
+    private bool Step(List<Node> openList, HashSet<(uint, uint)> closedList,
+                      Dictionary<(uint, uint), (uint, uint)> cameFrom,
+                      HashSet<(uint, uint)> otherClosedList,
+                      (uint, uint) start, (uint, uint) goal,
+                      bool isStart, out Node meetingNode)
+    {
+        meetingNode = null;
+
+        if (openList.Count == 0) return false;
+
+        var currentNode = openList.OrderBy(n => n.F).First();
+        openList.Remove(currentNode);
+
+        closedList.Add((currentNode.X, currentNode.Y));
+
+        if (otherClosedList.Contains((currentNode.X, currentNode.Y)))
+        {
+            meetingNode = currentNode;
+            return true;
         }
 
-        return null;
+        foreach (var neighbor in GetNeighbors(currentNode))
+        {
+            if (closedList.Contains((neighbor.X, neighbor.Y))) continue;
+
+            var tentativeG = currentNode.G + 1;
+
+            if (openList.Any(n => n.X == neighbor.X && n.Y == neighbor.Y && tentativeG >= n.G))
+            {
+                continue;
+            }
+
+            cameFrom[(neighbor.X, neighbor.Y)] = (currentNode.X, currentNode.Y);
+            neighbor.G = tentativeG;
+            neighbor.H = CalculateH(neighbor.X, neighbor.Y, goal.Item1, goal.Item2);
+            neighbor.F = neighbor.G + neighbor.H;
+
+            openList.Add(neighbor);
+        }
+
+        return false;
     }
 
     private uint CalculateH(uint fromX, uint fromY, uint toX, uint toY)
     {
-        int dx = Math.Abs((int)fromX - (int)toX);
-        int dy = Math.Abs((int)fromY - (int)toY);
-        return (uint)(dx == dy ? 14 * dx : 10 * (dx + dy));
+        return (uint)(Math.Abs((int)fromX - (int)toX) + Math.Abs((int)fromY - (int)toY));
     }
 
     private List<Node> GetNeighbors(Node node)
     {
-        List<Node> neighbors = new List<Node>();
-        (int, int)[] directions = new (int, int)[] {
-            (-1, 0), (1, 0), (0, -1), (0, 1),
-            (-1, -1), (-1, 1), (1, -1), (1, 1)
+        var neighbors = new List<Node>();
+        var directions = new[] {
+            (-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (-1, 1), (1, -1), (1, 1)
         };
 
         foreach (var (dx, dy) in directions)
         {
-            int newX = (int)node.X + dx;
-            int newY = (int)node.Y + dy;
+            var newX = (int)node.X + dx;
+            var newY = (int)node.Y + dy;
 
             if (newX >= 0 && newX < Width && newY >= 0 && newY < Height)
             {
-                int index = newY * (int)Width + newX;
-                Node neighbor = Grid[index];
-
-                if (neighbor.CollisionType != 1)
+                var index = newY * (int)Width + newX;
+                if (index >= 0 && index < Grid.Count && IsValidNode(index))
                 {
-                    neighbors.Add(neighbor);
+                    var neighbor = Grid[index];
+                    if (neighbor.CollisionType != 1)
+                    {
+                        neighbors.Add(neighbor);
+                    }
                 }
             }
         }
@@ -123,29 +175,44 @@ public class AStar(ItemDatabase itemDatabase)
         return neighbors;
     }
 
-    private List<Node> ReconstructPath(Dictionary<(uint, uint), (uint, uint)> cameFrom, (uint, uint) current, (uint, uint) start)
+    private bool IsValidNode(int index)
     {
-        List<Node> path = new List<Node>();
-        (uint, uint) currentPos = current;
+        lock (_gridLock)
+        {
+            return index >= 0 && index < Grid.Count && Grid[index].CollisionType != 1;
+        }
+    }
 
+    private List<Node> ReconstructPathBidirectional(Dictionary<(uint, uint), (uint, uint)> cameFromStart,
+                                                    Dictionary<(uint, uint), (uint, uint)> cameFromGoal,
+                                                    Node meetingNode, (uint, uint) start, (uint, uint) goal)
+    {
+        var path = new List<Node>();
+
+        (uint, uint) currentPos = (meetingNode.X, meetingNode.Y);
         while (currentPos != start)
         {
-            Node node = Grid.FirstOrDefault(n => n.X == currentPos.Item1 && n.Y == currentPos.Item2);
+            var node = Grid.FirstOrDefault(n => n.X == currentPos.Item1 && n.Y == currentPos.Item2);
             if (node != null)
             {
                 path.Add(node);
             }
-
-            currentPos = cameFrom[currentPos];
-        }
-
-        Node startNode = Grid.FirstOrDefault(n => n.X == start.Item1 && n.Y == start.Item2);
-        if (startNode != null)
-        {
-            path.Add(startNode);
+            currentPos = cameFromStart[currentPos];
         }
 
         path.Reverse();
+
+        currentPos = (meetingNode.X, meetingNode.Y);
+        while (currentPos != goal)
+        {
+            currentPos = cameFromGoal[currentPos];
+            var node = Grid.FirstOrDefault(n => n.X == currentPos.Item1 && n.Y == currentPos.Item2);
+            if (node != null)
+            {
+                path.Add(node);
+            }
+        }
+
         return path;
     }
 }

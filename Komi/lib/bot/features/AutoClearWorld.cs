@@ -8,12 +8,10 @@ public class AutoClearWorld
     public static void Start(Bot bot)
     {
         if (!bot.IsInWorld() || bot.World == null) return;
-        var worldWidth = bot.World.Width;
-        var worldHeight = bot.World.Height;
 
-        for (var y = 23; y < worldHeight - 6; y++)
+        for (var y = 23; y < 54; y++)
         {
-            for (var x = 0; x < worldWidth; x++)
+            for (var x = 0; x <= 99; x++)
             {
                 while (bot.IsInWorld())
                 {
@@ -34,11 +32,15 @@ public class AutoClearWorld
                         break;
                     }
 
-                    bot.FindPath((uint)x, (uint)(y - 1));
+                    if (!(bot.Position.X / 32.0f == x && bot.Position.Y / 32.0f == y))
+                    {
+                        bot.FindPath((uint)x, (uint)(y - 1));
+                    }
                     bot.Punch(0, 1);
                     Thread.Sleep(250);
                 }
             }
         }
+        Console.WriteLine("Cleared world!");
     }
 }

@@ -101,6 +101,8 @@ public class PacketHandler
                     case ETankPacketType.NetGamePacketSendInventoryState:
                         bot.Inventory.Parse(data.ToArray()[56..]);
                         break;
+                    case ETankPacketType.NetGamePacketAppIntegrityFail:
+                        break;
                     case ETankPacketType.NetGamePacketSendMapData:
                     {
                         using (var fileStream = File.Create("world.dat"))
@@ -171,7 +173,7 @@ public class PacketHandler
                                 }
                             }
                         }
-
+                        bot.AStar?.Update(bot.World);
                         break;
                     }
                     case ETankPacketType.NetGamePacketItemChangeObject:
