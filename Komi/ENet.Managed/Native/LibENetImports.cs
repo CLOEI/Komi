@@ -60,6 +60,9 @@ namespace ENet.Managed.Native
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_host_create")]
         public static extern IntPtr HostCreate(ENetAddressType addressType, NativeENetAddress* address, UIntPtr peerCount, UIntPtr channelLimit, uint incomingBandwidth, uint outgoingBandwidth);
 
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_host_use_socks5")]
+        public static extern int HostUseSocks5(IntPtr host, NativeENetProxyConfig* config);
+        
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_host_destroy")]
         public static extern void HostDestroy(IntPtr host);
 

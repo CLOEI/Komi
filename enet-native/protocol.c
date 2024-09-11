@@ -1236,10 +1236,24 @@ enet_protocol_receive_incoming_commands (ENetHost * host, ENetEvent * event)
        if (receivedLength == 0)
          return 0;
 
-       host -> receivedData = host -> packetData [0];
-       host -> receivedDataLength = receivedLength;
-      
-       host -> totalReceivedData += receivedLength;
+       if (host->proxySocket != ENET_SOCKET_NULL)
+       {
+           ENetSocks5UDP* replyHeader = (ENetSocks5UDP*)host->packetData[0];
+
+           if (replyHeader->addressType != ENET_SOCKS5_ADDRESS_IPV4)
+               return -1;
+
+           host->receivedData = host->packetData[0] + sizeof(ENetSocks5UDP);
+           host->receivedDataLength = receivedLength - sizeof(ENetSocks5UDP);
+           host->totalReceivedData += receivedLength - sizeof(ENetSocks5UDP);
+       }
+       else
+       {
+           host->receivedData = host->packetData[0];
+           host->receivedDataLength = receivedLength;
+           host->totalReceivedData += receivedLength;
+       }
+
        host -> totalReceivedPackets ++;
 
        if (host -> intercept != NULL)
@@ -1577,7 +1591,7 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
     host -> continueSending = 1;
     if (host -> usingNewPacket)
     {
-      enet_uint16 port = host -> peers -> address . port;
+      enet_uint16 port = host -> proxySocket != ENET_SOCKET_NULL ? host -> proxyAddress.port : host-> peers -> address.port;
       enet_uint16 rand1 = enet_host_random (host) % (port + 1);
 
       newHeader -> integrity[0] = ENET_HOST_TO_NET_16 (rand1);
@@ -1701,6 +1715,22 @@ enet_protocol_send_outgoing_commands (ENetHost * host, ENetEvent * event, int ch
             host -> buffers [1].data = host -> packetData [1];
             host -> buffers [1].dataLength = shouldCompress;
             host -> bufferCount = 2;
+        }
+
+        if (host->proxySocket != ENET_SOCKET_NULL)
+        {
+            memcpy((char*)host->buffers->data + sizeof(ENetSocks5UDP),
+                host->buffers->data,
+                host->buffers->dataLength);
+
+            ENetSocks5UDP* request = (ENetSocks5UDP*)host->buffers->data;
+            request->reserved = 0;
+            request->fragment = 0;
+            request->addressType = ENET_SOCKS5_ADDRESS_IPV4;
+            request->addressHost = host->proxyAddress.host.v4;
+            request->addressPort = ENET_HOST_TO_NET_16(host->proxyAddress.port);
+
+            host->buffers->dataLength += sizeof(ENetSocks5UDP);
         }
 
         currentPeer -> lastSendTime = host -> serviceTime;

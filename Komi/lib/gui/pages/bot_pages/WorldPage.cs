@@ -38,7 +38,7 @@ namespace Komi.lib.gui.pages.bot_pages
 
                     var tile = world.GetTile((uint)x, (uint)y);
                     var item = bot.ItemDatabase.GetItem(tile.ForegroundItemId);
-                    var color = bot.ItemDatabase.GetItem((uint)(tile.ForegroundItemId + 1)).OverlayColor;
+                    var color = bot.ItemDatabase.GetItem((uint)(tile.ForegroundItemId + 1)).BaseColor;
 
                     var r = ((color >> 24) & 0xFF) / 255.0f;
                     var g = ((color >> 16) & 0xFF) / 255.0f;

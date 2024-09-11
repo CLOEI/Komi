@@ -37,7 +37,7 @@ public class AutoClearWorld
                         bot.FindPath((uint)x, (uint)(y - 1));
                     }
                     bot.Punch(0, 1);
-                    Thread.Sleep(250);
+                    Thread.Sleep(350);
                 }
             }
         }

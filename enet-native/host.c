@@ -5,6 +5,7 @@
 #define ENET_BUILDING_LIB 1
 #include <string.h>
 #include "enet/enet.h"
+#include <stdio.h>
 
 /** @defgroup host ENet host functions
     @{
@@ -52,6 +53,7 @@ enet_host_create (ENetAddressType type, const ENetAddress * address, size_t peer
     memset (host -> peers, 0, peerCount * sizeof (ENetPeer));
 
     host -> socket = enet_socket_create (type, ENET_SOCKET_TYPE_DATAGRAM);
+	host -> proxySocket = ENET_SOCKET_NULL;
     if (host -> socket == ENET_SOCKET_NULL || (address != NULL && enet_socket_bind (host -> socket, address) < 0))
     {
        if (host -> socket != ENET_SOCKET_NULL)
@@ -140,6 +142,175 @@ enet_host_create (ENetAddressType type, const ENetAddress * address, size_t peer
     return host;
 }
 
+int enet_host_use_socks5(ENetHost* host, ENetProxyConfig* config)
+{
+    ENetAddress* address = &config->address;
+    host->proxySocket = enet_socket_create(ENET_ADDRESS_TYPE_IPV4, ENET_SOCKET_TYPE_STREAM);
+    host->proxyConfig = *config;
+
+    if (enet_socket_connect(host->proxySocket, address) != 0)
+        return -1;
+
+    ENetBuffer buffer;
+    ENetSocks5MethodRequest method;
+    method.version = ENET_SOCKS5_VERSION;
+    method.methodCount = 1;
+
+    if (strlen(config->username) == 0 && strlen(config->password) == 0)
+        method.methods[0] = ENET_SOCKS5_METHOD_NOAUTH;
+    else
+        method.methods[0] = ENET_SOCKS5_METHOD_USERPASS;
+
+    buffer.data = &method;
+    buffer.dataLength = sizeof(method.version) + sizeof(method.methodCount) + method.methodCount;
+
+    int sentLength = enet_socket_send(host->proxySocket, address, &buffer, 1);
+    if (sentLength <= 0) {
+        perror("Failed to send method request");
+        return -1;
+    }
+
+    enet_socket_set_option(host->proxySocket, ENET_SOCKOPT_NONBLOCK, 0);
+
+    ENetSocks5MethodResponse methodResponse;
+    memset(&methodResponse, 0, sizeof(ENetSocks5MethodResponse));
+
+    buffer.data = &methodResponse;
+    buffer.dataLength = sizeof(ENetSocks5MethodResponse);
+
+    fd_set read_fds;
+    struct timeval timeout;
+    FD_ZERO(&read_fds);
+    FD_SET(host->proxySocket, &read_fds);
+
+    // Set a timeout for 5 seconds
+    timeout.tv_sec = 5;
+    timeout.tv_usec = 0;
+
+    int selectResult = select(host->proxySocket + 1, &read_fds, NULL, NULL, &timeout);
+    if (selectResult == -1) {
+        perror("select() failed");
+        return -1;
+    }
+    else if (selectResult == 0) {
+        printf("Timeout occurred waiting for SOCKS5 response\n");
+        return -1;
+    }
+
+    int receivedLength = enet_socket_receive(host->proxySocket, NULL, &buffer, 1);
+    if (receivedLength <= 0) {
+        perror("Failed to receive method response");
+        return -1;
+    }
+
+    if (methodResponse.version != ENET_SOCKS5_VERSION) {
+        printf("Incorrect SOCKS version received\n");
+        return -1;
+    }
+
+    switch (methodResponse.method)
+    {
+    case ENET_SOCKS5_METHOD_NOAUTH:
+        break;
+
+    case ENET_SOCKS5_METHOD_USERPASS:
+    {
+        enet_uint8 usernameLength = (enet_uint8)strlen(config->username);
+        enet_uint8 passwordLength = (enet_uint8)strlen(config->password);
+
+        size_t offset = 0;
+        size_t authRequestSize = sizeof(enet_uint8) + sizeof(enet_uint8) + usernameLength + sizeof(enet_uint8) + passwordLength;
+        enet_uint8* authRequest = enet_malloc(authRequestSize);
+
+        if (authRequest == NULL) {
+            printf("Memory allocation failed for auth request\n");
+            return -1;
+        }
+
+        authRequest[offset++] = ENET_SOCKS5_AUTH_VERSION;
+        authRequest[offset++] = usernameLength;
+        memcpy(authRequest + offset, config->username, usernameLength);
+        offset += usernameLength;
+        authRequest[offset++] = passwordLength;
+        memcpy(authRequest + offset, config->password, passwordLength);
+        offset += passwordLength;
+
+        buffer.data = authRequest;
+        buffer.dataLength = authRequestSize;
+
+        sentLength = enet_socket_send(host->proxySocket, NULL, &buffer, 1);
+        enet_free(authRequest);
+        if (sentLength <= 0) {
+            perror("Failed to send authentication request");
+            return -1;
+        }
+
+        ENetSocks5AuthResponse authResponse;
+        buffer.data = &authResponse;
+        buffer.dataLength = sizeof(ENetSocks5AuthResponse);
+
+        selectResult = select(host->proxySocket + 1, &read_fds, NULL, NULL, &timeout);
+        if (selectResult == -1) {
+            perror("select() failed");
+            return -1;
+        }
+        else if (selectResult == 0) {
+            printf("Timeout waiting for SOCKS5 authentication response\n");
+            return -1;
+        }
+
+        receivedLength = enet_socket_receive(host->proxySocket, NULL, &buffer, 1);
+        if (receivedLength <= 0) {
+            perror("Failed to receive authentication response");
+            return -1;
+        }
+
+        if (authResponse.version != ENET_SOCKS5_AUTH_VERSION || authResponse.status != ENET_SOCKS5_AUTH_SUCCESS) {
+            printf("Authentication failed\n");
+            return -1;
+        }
+
+        break;
+    }
+
+    default:
+        printf("Unsupported SOCKS5 method: %d\n", methodResponse.method);
+        return -1;
+    }
+
+    ENetSocks5Connection connection;
+    connection.version = ENET_SOCKS5_VERSION;
+    connection.command = ENET_SOCKS5_COMMAND_UDP_ASSOCIATE;
+    connection.reserved = 0;
+    connection.addressType = ENET_SOCKS5_ADDRESS_IPV4;
+    connection.addressHost = 0;
+    connection.addressPort = 0;
+
+    buffer.data = &connection;
+    buffer.dataLength = sizeof(ENetSocks5Connection);
+
+    sentLength = enet_socket_send(host->proxySocket, NULL, &buffer, 1);
+    if (sentLength <= 0) {
+        return -1;
+    }
+
+    receivedLength = enet_socket_receive(host->proxySocket, NULL, &buffer, 1);
+    if (receivedLength <= 0) {
+        return -1;
+    }
+
+    if (connection.version != ENET_SOCKS5_VERSION || connection.status != ENET_SOCKS5_REPLY_SUCCEED) {
+        return -1;
+    }
+
+    if (connection.addressType != ENET_SOCKS5_ADDRESS_IPV4) {
+        return -1;
+    }
+
+    return 0;
+}
+
+
 /** Destroys the host and all resources associated with it.
     @param host pointer to the host to destroy
 */
@@ -215,8 +386,15 @@ enet_host_connect (ENetHost * host, const ENetAddress * address, size_t channelC
       return NULL;
     currentPeer -> channelCount = channelCount;
     currentPeer -> state = ENET_PEER_STATE_CONNECTING;
-    currentPeer -> address = * address;
     currentPeer -> connectID = enet_host_random (host);
+
+    if (host->proxySocket != ENET_SOCKET_NULL)
+    {
+        currentPeer->address = host->proxyConfig.address;
+        host->proxyAddress = *address;
+    }
+    else
+        currentPeer->address = *address;
 
     if (host -> outgoingBandwidth == 0)
       currentPeer -> windowSize = ENET_PROTOCOL_MAXIMUM_WINDOW_SIZE;

@@ -85,6 +85,10 @@ namespace ENet.Managed.Native
         public static HostCreateDelegate HostCreate { get; private set; }
 
         [UnmanagedFunctionPointer(ENetCallingConvention)]
+        public delegate int HostUseSocks5Delegate(IntPtr host, NativeENetProxyConfig* config);
+        public static HostUseSocks5Delegate HostUseSocks5 { get; private set; }
+        
+        [UnmanagedFunctionPointer(ENetCallingConvention)]
         public delegate void HostDestroyDelegate(IntPtr host);
         public static HostDestroyDelegate HostDestroy { get; private set; }
 
@@ -324,6 +328,7 @@ namespace ENet.Managed.Native
             HostCompressWithRangeCoder = LibENetImports.HostCompressWithRangeCoder;
             HostConnect = LibENetImports.HostConnect;
             HostCreate = LibENetImports.HostCreate;
+            HostUseSocks5 = LibENetImports.HostUseSocks5;
             HostDestroy = LibENetImports.HostDestroy;
             HostFlush = LibENetImports.HostFlush;
             HostService = LibENetImports.HostService;
@@ -367,6 +372,7 @@ namespace ENet.Managed.Native
             HostCompressWithRangeCoder = GetProc<HostCompressWithRangeCoderDelegate>("enet_host_compress_with_range_coder");
             HostConnect = GetProc<HostConnectDelegate>("enet_host_connect");
             HostCreate = GetProc<HostCreateDelegate>("enet_host_create");
+            HostUseSocks5 = GetProc<HostUseSocks5Delegate>("enet_host_use_socks5");
             HostDestroy = GetProc<HostDestroyDelegate>("enet_host_destroy");
             HostFlush = GetProc<HostFlushDelegate>("enet_host_flush");
             HostService = GetProc<HostServiceDelegate>("enet_host_service");

@@ -351,6 +351,13 @@ typedef enet_uint32 (ENET_CALLBACK * ENetChecksumCallback) (const ENetBuffer * b
 /** Callback for intercepting received raw UDP packets. Should return 1 to intercept, 0 to ignore, or -1 to propagate an error. */
 typedef int (ENET_CALLBACK * ENetInterceptCallback) (struct _ENetHost * host, struct _ENetEvent * event);
  
+typedef struct _ENetProxyConfig
+{
+	ENetAddress address;
+	char* username;
+	char* password;
+} ENetProxyConfig;
+
 /** An ENet host for communicating with peers.
   *
   * No fields should be modified unless otherwise stated.
@@ -406,6 +413,9 @@ typedef struct _ENetHost
    size_t               maximumPacketSize;           /**< the maximum allowable packet size that may be sent or received on a peer */
    size_t               maximumWaitingData;          /**< the maximum aggregate amount of buffer space a peer may use waiting for packets to be delivered */
    size_t               usingNewPacket;
+   ENetSocket           proxySocket;
+   ENetAddress		    proxyAddress;
+   ENetProxyConfig      proxyConfig;
 } ENetHost;
 
 /**
@@ -615,6 +625,7 @@ ENET_API int          enet_packet_resize  (ENetPacket *, size_t);
 ENET_API enet_uint32  enet_crc32 (const ENetBuffer *, size_t);
 
 ENET_API ENetHost * enet_host_create (ENetAddressType type, const ENetAddress *, size_t, size_t, enet_uint32, enet_uint32);
+ENET_API int        enet_host_use_socks5(ENetHost*, ENetProxyConfig*);
 ENET_API void       enet_host_destroy (ENetHost *);
 ENET_API ENetPeer * enet_host_connect (ENetHost *, const ENetAddress *, size_t, enet_uint32);
 ENET_API int        enet_host_check_events (ENetHost *, ENetEvent *);
