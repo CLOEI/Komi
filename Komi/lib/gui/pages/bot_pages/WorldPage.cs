@@ -31,7 +31,8 @@ namespace Komi.lib.gui.pages.bot_pages
 
                     if (y * world.Width + x >= world.TileCount)
                     {
-                        drawList.AddRectFilled(cellMin, cellMax, ImGui.GetColorU32(new Vector4(1.0f, 0.843f, 0.0f, 1.0f)));
+                        drawList.AddRectFilled(cellMin, cellMax,
+                            ImGui.GetColorU32(new Vector4(1.0f, 0.843f, 0.0f, 1.0f)));
                         continue;
                     }
 
@@ -46,11 +47,20 @@ namespace Komi.lib.gui.pages.bot_pages
 
                     drawList.AddRectFilled(cellMin, cellMax, ImGui.GetColorU32(new Vector4(r, g, b, a)));
 
+                    foreach (var player in bot.Players)
+                    {
+                        if (player.Position.X / 32 == x && player.Position.Y / 32 == y)
+                        {
+                            drawList.AddRectFilled(cellMin, cellMax,
+                                ImGui.GetColorU32(new Vector4(1.0f, 0.843f, 0.0f, 1.0f)));
+                        }
+                    }
 
                     var botPosition = bot.Position;
                     if (Math.Abs(botPosition.X / 32.0f - x) < 0.01f && Math.Abs(botPosition.Y / 32.0f - y) < 0.01f)
                     {
-                        drawList.AddRectFilled(cellMin, cellMax, ImGui.GetColorU32(new Vector4(1.0f, 0.0f, 0.0f, 1.0f)));
+                        drawList.AddRectFilled(cellMin, cellMax,
+                            ImGui.GetColorU32(new Vector4(1.0f, 0.0f, 0.0f, 1.0f)));
                     }
 
                     if (!ImGui.IsMouseHoveringRect(cellMin, cellMax)) continue;
@@ -73,7 +83,9 @@ namespace Komi.lib.gui.pages.bot_pages
                     }
                 }
             }
-            ImGui.Begin("World", ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize);
+
+            ImGui.Begin("World",
+                ImGuiWindowFlags.NoResize | ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize);
             ImGui.Text($"World size: {world.Width}x{world.Height}");
             ImGui.Text($"Bot position: {bot.Position.X / 32.0f}|{bot.Position.Y / 32.0f}");
             ImGui.Text($"Floating count: {world.Dropped.ItemsCount}");
@@ -82,6 +94,7 @@ namespace Komi.lib.gui.pages.bot_pages
             {
                 AutoTutorial.LockTheWorld(bot);
             }
+
             if (ImGui.Button("Auto clear world"))
             {
                 var thread = new Thread(() => AutoClearWorld.Start(bot))
@@ -90,6 +103,7 @@ namespace Komi.lib.gui.pages.bot_pages
                 };
                 thread.Start();
             }
+
             ImGui.End();
         }
     }

@@ -234,6 +234,7 @@ public class Bot
     {
         SetStatus("Checking refresh token");
         LogInfo("Checking if token is still valid");
+        if (string.IsNullOrEmpty(Info.Token)) return false;
 
         while (true)
         {
@@ -493,30 +494,48 @@ public class Bot
 
     public void SendPacket(EPacketType packetType, string message)
     {
-        var packetTypeByte = BitConverter.GetBytes((int)packetType);
-        var data = Encoding.ASCII.GetBytes(message);
+        if (Peer.IsNull) return;
+        try
+        {
+            var packetTypeByte = BitConverter.GetBytes((int)packetType);
+            var data = Encoding.ASCII.GetBytes(message);
 
-        var packetData = new byte[packetTypeByte.Length + data.Length];
-        packetTypeByte.CopyTo(packetData, 0);
-        data.CopyTo(packetData, packetTypeByte.Length);
+            var packetData = new byte[packetTypeByte.Length + data.Length];
+            packetTypeByte.CopyTo(packetData, 0);
+            data.CopyTo(packetData, packetTypeByte.Length);
 
-        Peer.Send(0, packetData, ENetPacketFlags.Reliable);
+            Peer.Send(0, packetData, ENetPacketFlags.Reliable);
+        }
+        catch (ENetException ex)
+        {
+            LogError($"Failed to send packet: {ex.Message}");
+            throw;
+        }
     }
 
     public void SendPacketRaw(TankPacket packet)
     {
-        // sizeof(int) is the size of EPacketType
-        var packetSize = sizeof(int) + Marshal.SizeOf(typeof(TankPacket)) + (int)packet.ExtendedDataLength;
-        var enetPacketData = new byte[packetSize];
+        if (Peer.IsNull) return;
+        try
+        {
+            // sizeof(int) is the size of EPacketType
+            var packetSize = sizeof(int) + Marshal.SizeOf(typeof(TankPacket)) + (int)packet.ExtendedDataLength;
+            var enetPacketData = new byte[packetSize];
 
-        const int packetType = (int)EPacketType.NetMessageGamePacket;
-        var packetTypeBytes = BitConverter.GetBytes(packetType);
-        Buffer.BlockCopy(packetTypeBytes, 0, enetPacketData, 0, packetTypeBytes.Length);
+            const int packetType = (int)EPacketType.NetMessageGamePacket;
+            var packetTypeBytes = BitConverter.GetBytes(packetType);
+            Buffer.BlockCopy(packetTypeBytes, 0, enetPacketData, 0, packetTypeBytes.Length);
 
-        var tankPacketBytes = Binary.StructToByteArray(packet);
-        Buffer.BlockCopy(tankPacketBytes, 0, enetPacketData, packetTypeBytes.Length, tankPacketBytes.Length);
+            var tankPacketBytes = Binary.StructToByteArray(packet);
+            Buffer.BlockCopy(tankPacketBytes, 0, enetPacketData, packetTypeBytes.Length, tankPacketBytes.Length);
 
-        Peer.Send(0, enetPacketData, ENetPacketFlags.Reliable);
+            Peer.Send(0, enetPacketData, ENetPacketFlags.Reliable);
+        }
+        catch (ENetException ex)
+        {
+            LogError($"Failed to send packet: {ex.Message}");
+            throw;
+        }
     }
 
     public static void Collect(Bot bot)

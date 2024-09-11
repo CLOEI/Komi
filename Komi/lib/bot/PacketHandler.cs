@@ -95,6 +95,17 @@ public class PacketHandler
 
                 switch (tankPacket.Type)
                 {
+                    case ETankPacketType.NetGamePacketState:
+                    {
+                        var player = bot.Players.FirstOrDefault(p => p.NetId == tankPacket.NetId);
+                        if (player != null)
+                        {
+                            player.Position.X = tankPacket.VectorX;
+                            player.Position.Y = tankPacket.VectorY;
+                        }
+
+                        break;
+                    }
                     case ETankPacketType.NetGamePacketCallFunction:
                         VariantHandler.Handle(bot, data[56..]);
                         break;
@@ -173,6 +184,7 @@ public class PacketHandler
                                 }
                             }
                         }
+
                         bot.AStar?.Update(bot.World);
                         break;
                     }

@@ -1,5 +1,6 @@
 ﻿using Komi.lib.types;
 using Komi.lib.utils;
+using Serilog;
 
 namespace Komi.lib.bot;
 
@@ -112,27 +113,28 @@ public class VariantHandler
                 {
                     var player = new Player
                     {
-                        Type = playerData["type"],
-                        Avatar = playerData["avatar"],
-                        NetId = int.Parse(playerData["netID"]),
-                        OnlineId = playerData["onlineID"],
-                        EId = playerData["eid"],
-                        Ip = playerData["ip"],
-                        Colrect = playerData["colrect"],
-                        TitleIcon = playerData["titleIcon"],
-                        MState = uint.Parse(playerData["mstate"]),
-                        UserId = uint.Parse(playerData["userID"]),
-                        Invisible = int.Parse(playerData["invis"]) != 0,
-                        Name = playerData["name"],
-                        Country = playerData["country"],
+                        Type = playerData.TryGetValue("type", out var type) ? type : string.Empty,
+                        Avatar = playerData.TryGetValue("avatar", out var avatar) ? avatar : string.Empty,
+                        NetId = playerData.TryGetValue("netID", out var netId) ? int.Parse(netId) : 0,
+                        OnlineId = playerData.TryGetValue("onlineID", out var onlineId) ? onlineId : string.Empty,
+                        EId = playerData.TryGetValue("eid", out var eId) ? eId : string.Empty,
+                        Ip = playerData.TryGetValue("ip", out var ip) ? ip : string.Empty,
+                        Colrect = playerData.TryGetValue("colrect", out var colrect) ? colrect : string.Empty,
+                        TitleIcon = playerData.TryGetValue("titleIcon", out var titleIcon) ? titleIcon : string.Empty,
+                        MState = playerData.TryGetValue("mstate", out var mstate) ? uint.Parse(mstate) : 0,
+                        UserId = playerData.TryGetValue("userID", out var userId) ? uint.Parse(userId) : 0,
+                        Invisible = playerData.TryGetValue("invis", out var invis) && int.Parse(invis) != 0,
+                        Name = playerData.TryGetValue("name", out var name) ? name : string.Empty,
+                        Country = playerData.TryGetValue("country", out var country) ? country : string.Empty,
                         Position = new Vector2
                         {
-                            X = uint.Parse(playerData["posXY"].Split('|')[0]),
-                            Y = uint.Parse(playerData["posXY"].Split('|')[1])
+                            X = playerData.TryGetValue("posXY", out var posXY) ? uint.Parse(posXY.Split('|')[0]) : 0,
+                            Y = playerData.TryGetValue("posXY", out var posXY2) ? uint.Parse(posXY2.Split('|')[1]) : 0
                         },
                     };
                     bot.Players.Add(player);
                 }
+
                 break;
             }
             case "OnRemove":
@@ -147,6 +149,7 @@ public class VariantHandler
                     bot.Players.RemoveAt(i);
                     break;
                 }
+
                 break;
             }
             case "OnRequestWorldSelectMenu":

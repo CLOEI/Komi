@@ -123,7 +123,6 @@ public class Login
         response.EnsureSuccessStatusCode();
 
         var jsonString = response.Content.ReadAsStringAsync().Result;
-        Console.WriteLine(jsonString);
         var json = JsonDocument.Parse(jsonString);
         return json.RootElement.GetProperty("token").GetString();
     }
