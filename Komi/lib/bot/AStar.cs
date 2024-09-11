@@ -39,7 +39,7 @@ public class AStar(ItemDatabase itemDatabase)
                 var node = new Node
                 {
                     X = (uint)(i % world.Width),
-                    Y = (uint)(i / world.Height),
+                    Y = (uint)(i / world.Width),
                     CollisionType = ItemDatabase.GetItem(world.Tiles[i].ForegroundItemId).CollisionType
                 };
                 Grid.Add(node);
