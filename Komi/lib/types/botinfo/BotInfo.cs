@@ -30,7 +30,7 @@
 
     public class State
     {
-        public uint NetId { get; set; }
+        public int NetId { get; set; }
         public int Gems { get; set; }
         public bool IsRunning { get; set; }
         public bool IsRedirecting { get; set; }

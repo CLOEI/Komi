@@ -30,6 +30,7 @@ public class Bot
     public Inventory Inventory { get; set; }
     public World? World { get; set; }
     public AStar? AStar { get; set; }
+    public List<Player> Players { get; set; } = [];
 
     public Bot(BotConfig config, ItemDatabase itemDatabase)
     {
@@ -38,7 +39,7 @@ public class Bot
             .CreateLogger();
         var payload = TextParse.ParseAndStoreAsList(config.Payload);
 
-        Info = new Info()
+        Info = new Info
         {
             Payload = payload,
             LoginMethod = config.LoginMethod,
@@ -289,6 +290,10 @@ public class Bot
 
     public void Reconnect()
     {
+        if (!Peer.IsNull)
+        {
+            Disconnect();
+        }
         SetStatus("Reconnecting...");
         ToHttp();
         Info.LoginInfo.Meta = Info.ServerData["meta"];
