@@ -446,6 +446,7 @@ public class Bot
     private void CreateHost()
     {
         Host = new ENetHost(null, 1, 2);
+        Host.UsingProxy("193.238.85.144", 44445, "14a08c952b1c9", "77f14b4f7f");
         Host.ChecksumWithCRC32();
         Host.CompressWithRangeCoder();
         Host.UsingNewPacket();

@@ -85,7 +85,7 @@ namespace ENet.Managed.Native
         public static HostCreateDelegate HostCreate { get; private set; }
 
         [UnmanagedFunctionPointer(ENetCallingConvention)]
-        public delegate int HostUseSocks5Delegate(IntPtr host, NativeENetProxyConfig* config);
+        public delegate int HostUseSocks5Delegate(IntPtr host, IntPtr proxyAddress, ushort proxyPort, IntPtr proxyUsername, IntPtr proxyPassword);
         public static HostUseSocks5Delegate HostUseSocks5 { get; private set; }
         
         [UnmanagedFunctionPointer(ENetCallingConvention)]

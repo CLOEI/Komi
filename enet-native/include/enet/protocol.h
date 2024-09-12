@@ -238,8 +238,6 @@ typedef enum _ENetSocks5ReplyStatus
     ENET_SOCKS5_REPLY_addressType_NOT_SUPPORTED,
 } ENetSocks5ReplyStatus;
 
-// Credit : zKevz
-
 typedef struct _ENetSocks5MethodRequest
 {
     enet_uint8 version;
@@ -280,6 +278,18 @@ typedef struct _ENetSocks5UDP
     enet_uint32 addressHost;
     enet_uint16 addressPort;
 } ENET_PACKED ENetSocks5UDP;
+
+typedef enum _ENetProxyState {
+    ENET_SOCKS5_STATE_NONE,
+    ENET_SOCKS5_STATE_SEND_AUTH_REQUEST,
+    ENET_SOCKS5_STATE_RECEIVE_AUTH_RESPONSE,
+    ENET_SOCKS5_STATE_SEND_AUTH_REQUEST_USERNAME,
+    ENET_SOCKS5_STATE_RECEIVE_AUTH_RESPONSE_USERNAME,
+    ENET_SOCKS5_STATE_SEND_REQUEST,
+    ENET_SOCKS5_STATE_RECEIVE_RESPONSE,
+    ENET_SOCKS5_STATE_CONNECTION_FAILED,
+    ENET_SOCKS5_STATE_CONNECTED
+} ENetProxyState;
 
 #ifdef _MSC_VER
 #pragma pack(pop)

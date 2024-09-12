@@ -353,7 +353,8 @@ typedef int (ENET_CALLBACK * ENetInterceptCallback) (struct _ENetHost * host, st
  
 typedef struct _ENetProxyConfig
 {
-	ENetAddress address;
+	char* host;
+	enet_uint16 port;
 	char* username;
 	char* password;
 } ENetProxyConfig;
@@ -416,6 +417,7 @@ typedef struct _ENetHost
    ENetSocket           proxySocket;
    ENetAddress		    proxyAddress;
    ENetProxyConfig      proxyConfig;
+   ENetProxyState	    proxyState;
 } ENetHost;
 
 /**

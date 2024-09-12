@@ -462,35 +462,29 @@ namespace ENet.Managed
             *m_usingNewPacket = new UIntPtr(1);
         }
 
-        public void UsingProxy(IPEndPoint endPoint, string username, string password)
+        public void UsingProxy(string proxyIp, ushort port, string username, string password)
         {
             CheckDispose();
+            IntPtr proxyIpPtr = Marshal.StringToHGlobalAnsi(proxyIp);
             IntPtr usernamePtr = Marshal.StringToHGlobalAnsi(username);
             IntPtr passwordPtr = Marshal.StringToHGlobalAnsi(password);
 
             try
             {
-                NativeENetAddress address = NativeENetAddress.FromIPEndPoint(endPoint);
-                NativeENetProxyConfig proxyConfig = new NativeENetProxyConfig()
-                {
-                    Address = address,
-                    Username = usernamePtr,
-                    Password = passwordPtr
-                };
-
-                var result = LibENet.HostUseSocks5(m_Pointer, &proxyConfig);
+                var result = LibENet.HostUseSocks5(m_Pointer, proxyIpPtr, port, usernamePtr, passwordPtr);
                 if (result != 0)
                 {
-                    throw new Exception("Failed to use SOCKS5 proxy.");
+                    throw new Exception("Failed to use proxy.");
                 }
             }
             finally
             {
+                Marshal.FreeHGlobal(proxyIpPtr);
                 Marshal.FreeHGlobal(usernamePtr);
                 Marshal.FreeHGlobal(passwordPtr);
             }
         }
-        
+
         public bool IsUsingNewPacket()
         {
             CheckDispose();

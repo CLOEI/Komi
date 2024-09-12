@@ -15,7 +15,8 @@ namespace ENet.Managed.Native
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_initialize")]
         public static extern int Initialize();
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_initialize_with_callbacks")]
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_initialize_with_callbacks")]
         public static extern int InitializeWithCallbacks(uint version, NativeENetCallbacks* callbacks);
 
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_deinitialize")]
@@ -24,45 +25,58 @@ namespace ENet.Managed.Native
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_linked_version")]
         public static extern uint LinkedVersion();
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_address_get_host")]
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_address_get_host")]
         public static extern int AddressGetHost(NativeENetAddress* address, IntPtr hostName, UIntPtr nameLength);
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_address_get_host_ip")]
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_address_get_host_ip")]
         public static extern int AddressGetHostIP(NativeENetAddress* address, IntPtr hostName, UIntPtr nameLength);
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_address_set_host")]
-        public static extern int AddressSetHost(NativeENetAddress* address, [MarshalAs(UnmanagedType.LPStr)] string hostName);
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_address_set_host")]
+        public static extern int AddressSetHost(NativeENetAddress* address,
+            [MarshalAs(UnmanagedType.LPStr)] string hostName);
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_address_set_host_ip")]
-        public static extern int AddressSetHostIP(NativeENetAddress* address, [MarshalAs(UnmanagedType.LPStr)] string hostName);
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_address_set_host_ip")]
+        public static extern int AddressSetHostIP(NativeENetAddress* address,
+            [MarshalAs(UnmanagedType.LPStr)] string hostName);
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_host_bandwidth_limit")]
-        public static extern void HostBandwidthLimit(IntPtr host, uint incomingBandwidth, uint outgoingBandwidth); 
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_host_bandwidth_limit")]
+        public static extern void HostBandwidthLimit(IntPtr host, uint incomingBandwidth, uint outgoingBandwidth);
 
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_host_broadcast")]
         public static extern void HostBroadcast(IntPtr host, byte channel, NativeENetPacket* packet);
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_host_channel_limit")]
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_host_channel_limit")]
         public static extern void HostChannelLimit(IntPtr host, UIntPtr channelLimit);
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_host_check_events")]
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_host_check_events")]
         public unsafe static extern int HostCheckEvents(IntPtr host, NativeENetEvent* e);
 
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_host_compress")]
         public static extern void HostCompress(IntPtr host, NativeENetCompressor* compressor);
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_host_compress_with_range_coder")]
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_host_compress_with_range_coder")]
         public static extern int HostCompressWithRangeCoder(IntPtr host);
 
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_host_connect")]
-        public static extern NativeENetPeer* HostConnect(IntPtr host, NativeENetAddress* address, UIntPtr channelCount, uint data);
+        public static extern NativeENetPeer* HostConnect(IntPtr host, NativeENetAddress* address, UIntPtr channelCount,
+            uint data);
 
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_host_create")]
-        public static extern IntPtr HostCreate(ENetAddressType addressType, NativeENetAddress* address, UIntPtr peerCount, UIntPtr channelLimit, uint incomingBandwidth, uint outgoingBandwidth);
+        public static extern IntPtr HostCreate(ENetAddressType addressType, NativeENetAddress* address,
+            UIntPtr peerCount, UIntPtr channelLimit, uint incomingBandwidth, uint outgoingBandwidth);
 
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_host_use_socks5")]
-        public static extern int HostUseSocks5(IntPtr host, NativeENetProxyConfig* config);
-        
+        public static extern int HostUseSocks5(IntPtr host, IntPtr proxyIp, ushort proxyPort, IntPtr proxyUsername,
+            IntPtr proxyPassword);
+
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_host_destroy")]
         public static extern void HostDestroy(IntPtr host);
 
@@ -87,16 +101,19 @@ namespace ENet.Managed.Native
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_peer_disconnect")]
         public static extern void PeerDisconnect(NativeENetPeer* peer, uint data);
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_peer_disconnect_now")]
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_peer_disconnect_now")]
         public static extern void PeerDisconnectNow(NativeENetPeer* peer, uint data);
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_peer_disconnect_later")]
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_peer_disconnect_later")]
         public static extern void PeerDisconnectLater(NativeENetPeer* peer, uint data);
 
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_peer_ping")]
         public static extern void PeerPing(NativeENetPeer* peer);
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_peer_ping_interval")]
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_peer_ping_interval")]
         public static extern void PeerPingInterval(NativeENetPeer* peer, uint pingInterval);
 
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_peer_receive")]
@@ -108,13 +125,17 @@ namespace ENet.Managed.Native
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_peer_send")]
         public static extern int PeerSend(NativeENetPeer* peer, byte channelID, NativeENetPacket* packet);
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_peer_throttle_configure")]
-        public static extern void PeerThrottleConfigure(NativeENetPeer* peer, uint interval, uint acceleration, uint deceleration);
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_peer_throttle_configure")]
+        public static extern void PeerThrottleConfigure(NativeENetPeer* peer, uint interval, uint acceleration,
+            uint deceleration);
 
         [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_peer_timeout")]
-        public static extern void PeerTimeout(NativeENetPeer* peer, uint timeoutLimit, uint timeoutMinimum, uint timeoutMaximum);
+        public static extern void PeerTimeout(NativeENetPeer* peer, uint timeoutLimit, uint timeoutMinimum,
+            uint timeoutMaximum);
 
-        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention, EntryPoint = "enet_interophelper_sizeoroffset")]
+        [DllImport(MODULE_NAME, CallingConvention = LibENet.ENetCallingConvention,
+            EntryPoint = "enet_interophelper_sizeoroffset")]
         public static extern IntPtr InteropHelperSizeOrOffset(uint id);
     }
 }
