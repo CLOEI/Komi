@@ -22,7 +22,7 @@ cmake --build ./build --config Release
 ## Todo
 - [ ] Implement bot library
 - [x] Implement GUI
-- [ ] Item database GUI
+- [x] Item database GUI
 - [ ] Inventory GUI
 - [x] World serializer ( Not Full )
 - [x] items.dat parser
