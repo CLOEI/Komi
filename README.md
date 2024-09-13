@@ -23,7 +23,7 @@ cmake --build ./build --config Release
 - [ ] Implement bot library
 - [x] Implement GUI
 - [ ] Item database GUI
-- [ ] Inventory GUI
+- [x] Inventory GUI
 - [x] World serializer ( Not Full )
 - [x] items.dat parser
 - [x] World map
